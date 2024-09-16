@@ -1,5 +1,6 @@
-def read():
-    pass
+def read(location):
+    print(words[location])
+    return words[location]
 
 def write():
     pass
@@ -45,7 +46,7 @@ def read_txt_file():
 
 file = "Test1.txt"
 accumulator = 0
-words = []
+words = [""] * 100
 pointer = 0
 
 
@@ -56,11 +57,12 @@ def main():
     global pointer
     word = words[pointer]
     word = word[:3] # grab only first 3 characters
+    location = word[3:] # grabs last 2 characters for a location
     
     match word:
       case "+10":
         print("read")
-        read()
+        read(location)
       case "+11":
         print("write")
         write()
