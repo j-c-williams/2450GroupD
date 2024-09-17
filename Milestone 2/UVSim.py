@@ -1,5 +1,4 @@
 def read(location):
-    location = int(location)  # Convert the location to an integer
     print(f"Reading from location: {location}")
     print(f"Value at location {location}: {words[location]}")
     return words[location]
@@ -10,8 +9,9 @@ def write():
 def load():
     pass
 
-def store():
-    pass
+def store(location):
+    print(f"Storing {accumulator} into location {location}")
+    words[location] = accumulator
 
 def add():
     pass
@@ -46,12 +46,9 @@ def read_txt_file(file_path):
     if len(words) == 0:
         raise ValueError("Text file must have at least one word")
 
-
-file = "Test1.txt"
 accumulator = 0
 words = [""] * 100
 pointer = 0
-
 
 def main():
     file_input = input('What is the file location? ')
@@ -62,6 +59,7 @@ def main():
         word = words[pointer]
         operation = word[:3]  # Grab only the first 3 characters (operation code)
         location = word[3:]   # Grab the last 2 characters for the location
+        location = int(location)
         
         print(f"Current instruction: {word}, Operation: {operation}, Location: {location}")
         
@@ -77,7 +75,7 @@ def main():
                 load()
             case "+21":
                 print("store")
-                store()
+                store(location)
             case "+30":
                 print("add")
                 add()
@@ -100,11 +98,13 @@ def main():
                 print("branchzero")
                 branch_zero()
             case "+43":
-                print("halt")
+                print("The program has been halted.")
                 break
-
+            case _:
+                raise ValueError(f"Unrecognized operation code: {operation}")
+ 
         pointer += 1
-
 
 if __name__ == "__main__":
     main()
+
