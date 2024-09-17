@@ -6,8 +6,9 @@ def read(location):
 def write():
     pass
 
-def load():
-    pass
+def load(location):
+    global accumulator 
+    accumulator = words[location]
 
 def store(location):
     print(f"Storing {accumulator} into location {location}")
@@ -25,14 +26,27 @@ def divide():
 def mulitply():
     pass
 
-def branch():
-    pass
+def branch(location):
+    global pointer
+    pointer = location
+    print(f"Branching to location {location}")
 
-def branch_neg():
-    pass
+def branch_neg(location):
+    global accumulator
+    if accumulator < 0:
+        branch(location)
+        print(f"Branchneg - acc is negative")
+    else:
+        print(f"Branchneg - acc is not negative")
 
-def branch_zero():
-    pass
+def branch_zero(location):
+    global accumulator
+    if accumulator == 0:
+        branch(location)
+        print(f"Branchzero - acc is zero")
+    else:
+        print(f"Branchzero - acc is not zero")
+
 
 def halt():
     pass
@@ -43,9 +57,6 @@ def read_txt_file(file_path):
         for i, word in enumerate(f.read().split()):
             words[i] = word
     
-    if len(words) == 0:
-        raise ValueError("Text file must have at least one word")
-
 accumulator = 0
 words = [""] * 100
 pointer = 0
@@ -54,12 +65,11 @@ def main():
     file_input = input('What is the file location? ')
     read_txt_file(file_input)
 
-    while(True):
+    while True:
         global pointer
         word = words[pointer]
         operation = word[:3]  # Grab only the first 3 characters (operation code)
-        location = word[3:]   # Grab the last 2 characters for the location
-        location = int(location)
+        location = int(word[3:])   # Grab the last 2 characters for the location
         
         print(f"Current instruction: {word}, Operation: {operation}, Location: {location}")
         
@@ -72,7 +82,7 @@ def main():
                 write()
             case "+20":
                 print("load")
-                load()
+                load(location)
             case "+21":
                 print("store")
                 store(location)
@@ -90,19 +100,19 @@ def main():
                 mulitply()
             case "+40":
                 print("branch")
-                branch()
+                branch(location)
             case "+41":
                 print("branchneg")
-                branch_neg()
+                branch_neg(location)
             case "+42":
                 print("branchzero")
-                branch_zero()
+                branch_zero(location)
             case "+43":
                 print("The program has been halted.")
                 break
             case _:
                 raise ValueError(f"Unrecognized operation code: {operation}")
- 
+
         pointer += 1
 
 if __name__ == "__main__":
