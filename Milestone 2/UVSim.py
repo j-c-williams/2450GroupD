@@ -1,7 +1,13 @@
-def read(location):
+def read(location, words):
+    if location < 0:
+        raise IndexError(f"Negative memory location: {location} is not allowed.")
+    elif location >= len(words):
+        raise IndexError(f"Memory location {location} is out of bounds.")
+    
     print(f"Reading from location: {location}")
     print(f"Value at location {location}: {words[location]}")
-    return words[location]
+    return words[location] if words[location] is not None else ""
+
 
 def write():
     pass
@@ -11,8 +17,15 @@ def load(location):
     accumulator = words[location]
 
 def store(location):
+    if location < 0:
+        raise IndexError(f"Negative memory location: {location} is not allowed.")
+    elif location >= len(words):
+        raise IndexError(f"Memory location {location} is out of bounds.")
+    
     print(f"Storing {accumulator} into location {location}")
     words[location] = accumulator
+
+
 
 def add():
     pass
@@ -20,8 +33,17 @@ def add():
 def subtract():
     pass
 
-def divide():
-    pass
+def divide(location):
+    global accumulator
+    divisor = float(words[location]) 
+    
+    if divisor == 0:
+        raise ZeroDivisionError("Cannot divide by zero.")
+    
+    accumulator = float(accumulator) / divisor 
+    print(f"Dividing: accumulator now = {accumulator}")
+
+
 
 def mulitply():
     pass
@@ -33,6 +55,7 @@ def branch(location):
 
 def branch_neg(location):
     global accumulator
+    accumulator = int(accumulator)
     if accumulator < 0:
         branch(location)
         print(f"Branchneg - acc is negative")
@@ -41,6 +64,7 @@ def branch_neg(location):
 
 def branch_zero(location):
     global accumulator
+    accumulator = int(accumulator)
     if accumulator == 0:
         branch(location)
         print(f"Branchzero - acc is zero")
@@ -76,7 +100,7 @@ def main():
         match operation:
             case "+10":
                 print("read")
-                read(location)
+                read(location, words)
             case "+11":
                 print("write")
                 write()
@@ -94,7 +118,7 @@ def main():
                 subtract()
             case "+32":
                 print("divide")
-                divide()
+                divide(location)
             case "+33":
                 print("multiply")
                 mulitply()
