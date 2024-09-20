@@ -10,15 +10,21 @@ User Story 1: Running a Program with Input and Output
 
 As a computer science student, I want to write a BasicML program that reads multiple values from the keyboard then outputs the results of various calculations to the screen.
 
-List of steps the student will complete: 1. The student writes a BasicML program that includes READ (opcode 10) and WRITE (opcode 11) instructions. 2. The student loads the program into the UVSim and starts execution. 3. The UVSim prompts the student for input when encountering a READ instruction and stores the input value at the specified memory location. 4. When encountering a WRITE instruction, the UVSim outputs the value stored at the specified memory location to the screen. 5. The program continues executing, displaying results until a HALT instruction is executed.
+List of steps the student will complete:
+
+1. The student writes a BasicML program that includes READ (opcode 10) and WRITE (opcode 11) instructions.
+2. The student loads the program into the UVSim and starts execution.
+3. The UVSim prompts the student for input when encountering a READ instruction and stores the input value at the specified memory location.
+4. When encountering a WRITE instruction, the UVSim outputs the value stored at the specified memory location to the screen.
+5. The program continues executing, displaying results until a HALT instruction is executed.
 
 User Story 2: Arithmetic Operations in the Accumulator
 
 As a computer science student, I want to execute a BasicML program that performs arithmetic operations on data stored in memory.
 
 List of steps the student will complete:
-1.The student writes a BasicML program that loads values into the accumulator and performs operations such as ADD (opcode 30), SUBTRACT (opcode 31), MULTIPLY (opcode 33), and DIVIDE (opcode 32). 2. The student loads the program into the UVSim and starts execution. 3. The UVSim loads values from specified memory locations into the accumulator using the LOAD instruction. 4. The UVSim performs operations on the value in the accumulator and a value from another memory location, storing the result back in the accumulator.
-The program continues executing until a HALT instruction is encountered, and the final result is displayed to the student.
+
+1.The student writes a BasicML program that loads values into the accumulator and performs operations such as ADD (opcode 30), SUBTRACT (opcode 31), MULTIPLY (opcode 33), and DIVIDE (opcode 32). 2. The student loads the program into the UVSim and starts execution. 3. The UVSim loads values from specified memory locations into the accumulator using the LOAD instruction. 4. The UVSim performs operations on the value in the accumulator and a value from another memory location, storing the result back in the accumulator. 5. The program continues executing until a HALT instruction is encountered, and the final result is displayed to the student.
 
 # Use Cases (10-15)
 
