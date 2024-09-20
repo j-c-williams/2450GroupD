@@ -3,8 +3,8 @@ def read(location):
     print(f"Value at location {location}: {words[location]}")
     return words[location]
 
-def write():
-    pass
+def write(location):
+    print(words[location])
 
 def load(location):
     global accumulator 
@@ -14,17 +14,22 @@ def store(location):
     print(f"Storing {accumulator} into location {location}")
     words[location] = accumulator
 
-def add():
-    pass
+def add(location):
+    
+    acclimator = (int(acclimator) + int(words[location])) % 10000
 
-def subtract():
-    pass
+def subtract(location):
+    acclimator = (int(acclimator) - int(words[location])) % 10000
 
-def divide():
-    pass
+def multiply(location):
+    acclimator = (int(acclimator) * int(words[location])) % 10000
 
-def mulitply():
-    pass
+def divide(location):
+    try:
+        acclimator = int(acclimator / int(words[location]))
+    except (ZeroDivisionError, ValueError):
+        print("Acclimator unable to be divided by zero, command failed to execute.")
+        return
 
 def branch(location):
     global pointer
