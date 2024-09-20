@@ -1,7 +1,12 @@
-def read(location):
+def read(location, words):
+    if location < 0:
+        raise IndexError(f"Negative memory location: {location} is not allowed.")
+    elif location >= len(words):
+        raise IndexError(f"Memory location {location} is out of bounds.")
+    
     print(f"Reading from location: {location}")
     print(f"Value at location {location}: {words[location]}")
-    return words[location]
+    return words[location] if words[location] is not None else ""
 
 def write(location):
     print(words[location])
@@ -11,25 +16,37 @@ def load(location):
     accumulator = words[location]
 
 def store(location):
+    if location < 0:
+        raise IndexError(f"Negative memory location: {location} is not allowed.")
+    elif location >= len(words):
+        raise IndexError(f"Memory location {location} is out of bounds.")
+    
     print(f"Storing {accumulator} into location {location}")
     words[location] = accumulator
 
 def add(location):
-    
+    print(f"Adding {word} to {accumulator}")
     acclimator = (int(acclimator) + int(words[location])) % 10000
 
 def subtract(location):
+    print(f"Subtracting {word} from {accumulator}")
     acclimator = (int(acclimator) - int(words[location])) % 10000
 
 def multiply(location):
+    print(f"Multiplying {word} by {accumulator}")
     acclimator = (int(acclimator) * int(words[location])) % 10000
 
 def divide(location):
-    try:
-        acclimator = int(acclimator / int(words[location]))
-    except (ZeroDivisionError, ValueError):
-        print("Acclimator unable to be divided by zero, command failed to execute.")
-        return
+    global accumulator
+    divisor = float(words[location]) 
+    
+    if divisor == 0:
+        raise ZeroDivisionError("Cannot divide by zero.")
+    
+    accumulator = float(accumulator) / divisor 
+    print(f"Dividing: accumulator now = {accumulator}")
+
+
 
 def branch(location):
     global pointer
@@ -38,6 +55,7 @@ def branch(location):
 
 def branch_neg(location):
     global accumulator
+    accumulator = int(accumulator)
     if accumulator < 0:
         branch(location)
         print(f"Branchneg - acc is negative")
@@ -46,6 +64,7 @@ def branch_neg(location):
 
 def branch_zero(location):
     global accumulator
+    accumulator = int(accumulator)
     if accumulator == 0:
         branch(location)
         print(f"Branchzero - acc is zero")
@@ -81,10 +100,10 @@ def main():
         match operation:
             case "+10":
                 print("read")
-                read(location)
+                read(location, words)
             case "+11":
                 print("write")
-                write()
+                write(location)
             case "+20":
                 print("load")
                 load(location)
@@ -93,16 +112,16 @@ def main():
                 store(location)
             case "+30":
                 print("add")
-                add()
+                add(word)
             case "+31":
                 print("subtract")
-                subtract()
+                subtract(word)
             case "+32":
                 print("divide")
-                divide()
+                divide(location)
             case "+33":
                 print("multiply")
-                mulitply()
+                mulitply(word)
             case "+40":
                 print("branch")
                 branch(location)
