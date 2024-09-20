@@ -9,8 +9,8 @@ def read(location, words):
     return words[location] if words[location] is not None else ""
 
 
-def write():
-    pass
+def write(location):
+    print(words[location])
 
 def load(location):
     global accumulator 
@@ -25,13 +25,12 @@ def store(location):
     print(f"Storing {accumulator} into location {location}")
     words[location] = accumulator
 
+def add(word):
+    print(f"Adding {word} to {accumulator}")
+    accumulator = accumulator + word
 
-
-def add():
-    pass
-
-def subtract():
-    pass
+def subtract(word):
+    print(f"Subtracting {word} from {accumulator}")
 
 def divide(location):
     global accumulator
@@ -45,8 +44,9 @@ def divide(location):
 
 
 
-def mulitply():
-    pass
+def mulitply(word):
+    print(f"Multiplying {word} by {accumulator}")
+    accumulator = accumulator * word    
 
 def branch(location):
     global pointer
@@ -103,7 +103,7 @@ def main():
                 read(location, words)
             case "+11":
                 print("write")
-                write()
+                write(location)
             case "+20":
                 print("load")
                 load(location)
@@ -112,16 +112,16 @@ def main():
                 store(location)
             case "+30":
                 print("add")
-                add()
+                add(word)
             case "+31":
                 print("subtract")
-                subtract()
+                subtract(word)
             case "+32":
                 print("divide")
                 divide(location)
             case "+33":
                 print("multiply")
-                mulitply()
+                mulitply(word)
             case "+40":
                 print("branch")
                 branch(location)
