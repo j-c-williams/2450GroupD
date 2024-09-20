@@ -9,7 +9,13 @@ def write(location, words):
     return words[location] if words[location] is not None else ""
 
 def read(location):
-    pass
+    if location < 0 or location >= len(words):
+        raise IndexError(f"Invalid memory location: {location}")
+    
+    user_input = input(f"What would you like to write to register {location}? ")
+    print(f'Writing "{user_input}" to register {location}.')
+    words[location] = user_input
+
 
 def load(location):
     if location < 0 or location > 99:
@@ -116,61 +122,69 @@ def main():
 
     while True:
         global pointer
+        if pointer >= len(words):
+            print("End of program reached. Exiting.")
+            break
+
         word = words[pointer]
         operation = word[:3]  # Grab only the first 3 characters (operation code)
         location = int(word[3:])   # Grab the last 2 characters for the location
         
         print(f"Current instruction: {word}, Operation: {operation}, Location: {location}")
         
-        match operation:
-            case "+10":
-                print("read")
-                read(location)
-                pointer += 1
-            case "+11":
-                print("write")
-                write(location, words)
-                pointer += 1
-            case "+20":
-                print("load")
-                load(location)
-                pointer += 1
-            case "+21":
-                print("store")
-                store(location)
-                pointer += 1
-            case "+30":
-                print("add")
-                add(word)
-                pointer += 1
-            case "+31":
-                print("subtract")
-                subtract(location)
-                pointer += 1
-            case "+32":
-                print("divide")
-                divide(location)
-                pointer += 1
-            case "+33":
-                print("multiply")
-                multiply(word)
-                pointer += 1
-            case "+40":
-                print("branch")
-                branch(location)
-            case "+41":
-                print("branchneg")
-                branch_neg(location)
-            case "+42":
-                print("branchzero")
-                branch_zero(location)
-            case "+43":
-                print("The program has been halted.")
-                break
-            case _:
-                raise ValueError(f"Unrecognized operation code: {operation}")
-
-
+        try:
+            match operation:
+                case "+10":
+                    print("read")
+                    read(location)
+                    pointer += 1
+                case "+11":
+                    print("write")
+                    write(location, words)
+                    pointer += 1
+                case "+20":
+                    print("load")
+                    load(location)
+                    pointer += 1
+                case "+21":
+                    print("store")
+                    store(location)
+                    pointer += 1
+                case "+30":
+                    print("add")
+                    add(word)
+                    pointer += 1
+                case "+31":
+                    print("subtract")
+                    subtract(location)
+                    pointer += 1
+                case "+32":
+                    print("divide")
+                    divide(location)
+                    pointer += 1
+                case "+33":
+                    print("multiply")
+                    multiply(word)
+                    pointer += 1
+                case "+40":
+                    print("branch")
+                    branch(location)
+                case "+41":
+                    print("branchneg")
+                    branch_neg(location)
+                case "+42":
+                    print("branchzero")
+                    branch_zero(location)
+                case "+43":
+                    print("The program has been halted.")
+                    break
+                case _:
+                    print(f"Unrecognized operation code: {operation}, skipping this operation")
+                    pointer += 1
+        except Exception as e:
+            print(f"Error encountered: {str(e)}")
+            print("Continuing with the next instruction.")
+            pointer += 1
 
 if __name__ == "__main__":
     main()
