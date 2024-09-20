@@ -121,7 +121,7 @@ def main():
                 store(location)
             case "+30":
                 print("add")
-                add(word)
+                add(location)
             case "+31":
                 print("subtract")
                 subtract(location)
@@ -130,7 +130,7 @@ def main():
                 divide(location)
             case "+33":
                 print("multiply")
-                multiply(word)
+                multiply(location)
             case "+40":
                 print("branch")
                 branch(location)
