@@ -33,7 +33,7 @@ def store(location):
 def add(location):
     global accumulator
     if (int(accumulator) + int(words[location])) > 0:
-        accumulator = (int(accumulator) + int(words(location))) % 10000
+        accumulator = (int(accumulator) + int(words[location])) % 10000
     else: accumulator = -(abs(int(accumulator) + int(words[location]))%10000)
     
 def subtract(location):
@@ -140,7 +140,6 @@ def main():
                 case "+40":
                     branch(location)
                 case "+41":
-                    print("branchneg")
                     branch_neg(location)
                 case "+42":
                     branch_zero(location)
