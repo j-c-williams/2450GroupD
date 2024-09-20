@@ -122,7 +122,7 @@ def main():
 
     while True:
         global pointer
-        if pointer >= len(words) or words[pointer] == "":
+        if pointer >= len(words):
             print("End of program reached. Exiting.")
             break
 
