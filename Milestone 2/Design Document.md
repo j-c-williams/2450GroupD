@@ -1,10 +1,24 @@
 # Milestone 2 Design Document
 
-High level description on how the program works
+# High-level Overview
 
-2 User stories
+The UVSim software is a simulator for computer science students to use to execute machine language programs. UVSim can only interperet the BasicML language, which is composed of signed 4 digit integers. These integers will trigger different commands to move, manipulate, store and view data.
 
-10-15 Use cases
+# User Stories
+
+User Story 1: Running a Program with Input and Output
+
+As a computer science student, I want to write a BasicML program that reads multiple values from the keyboard then outputs the results of various calculations to the screen.
+
+List of steps the student will complete: 1. The student writes a BasicML program that includes READ (opcode 10) and WRITE (opcode 11) instructions. 2. The student loads the program into the UVSim and starts execution. 3. The UVSim prompts the student for input when encountering a READ instruction and stores the input value at the specified memory location. 4. When encountering a WRITE instruction, the UVSim outputs the value stored at the specified memory location to the screen. 5. The program continues executing, displaying results until a HALT instruction is executed.
+
+User Story 2: Arithmetic Operations in the Accumulator
+
+As a computer science student, I want to execute a BasicML program that performs arithmetic operations on data stored in memory.
+
+List of steps the student will complete:
+1.The student writes a BasicML program that loads values into the accumulator and performs operations such as ADD (opcode 30), SUBTRACT (opcode 31), MULTIPLY (opcode 33), and DIVIDE (opcode 32). 2. The student loads the program into the UVSim and starts execution. 3. The UVSim loads values from specified memory locations into the accumulator using the LOAD instruction. 4. The UVSim performs operations on the value in the accumulator and a value from another memory location, storing the result back in the accumulator.
+The program continues executing until a HALT instruction is encountered, and the final result is displayed to the student.
 
 # Use Cases (10-15)
 
@@ -19,7 +33,7 @@ Steps:
 1. Parse function code ("+10" for READ)
 2. Extract location from the last two digits of the word
 3. Validate the memory location
-    If location is negative or out of bounds, raise an IndexError
+   If location is negative or out of bounds, raise an IndexError
 4. Prompt the user for input
 5. Read the user's input
 6. Store the input at the specified memory location
@@ -44,8 +58,8 @@ Steps:
 1. Parse function code ("+21" for STORE)
 2. Extract location from the last two digits of the word
 3. Validate the memory location
-    If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
-    If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
+   If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
+   If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
 4. Retrieve the current value of the accumulator
 5. Store the accumulator value at the specified memory location
 6. Move to the next instruction (increment the pointer)
@@ -67,7 +81,7 @@ Steps:
 3. Retrieve the value stored at the specified memory location
 4. Convert the retrieved value to a float (divisor)
 5. Check if the divisor is zero
-    If divisor is zero, raise a ZeroDivisionError with message "Cannot divide by zero."
+   If divisor is zero, raise a ZeroDivisionError with message "Cannot divide by zero."
 6. Perform the division: accumulator = float(accumulator) / divisor
 7. Update the accumulator with the result of the division
 8. Move to the next instruction (increment the pointer)
