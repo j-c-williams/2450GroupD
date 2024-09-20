@@ -1,21 +1,35 @@
 import unittest
-from UVSim import read, words
+from unittest.mock import patch
+from io import StringIO
+import UVSim
 
-class TestReadFunction(unittest.TestCase):
+class TestReadFunctionNormal(unittest.TestCase):
 
     def setUp(self):
-        global words
-        words = [""] * 100
-        words[5] = "test_word"
+        # Reset the words list before each test
+        UVSim.words = [""] * 100
 
-    def test_read_valid_location(self):
-        result = read(5, words)
-        self.assertEqual(result, "test_word")
+    @patch('UVSim.input', return_value="test_input")
+    def test_read_valid_location(self, mock_input):
+        UVSim.read(0)
+        self.assertEqual(UVSim.words[0], "test_input")
 
-    def test_read_empty_location(self):
-        # Test reading from an empty location
-        result = read(10, words)
-        self.assertEqual(result, "")
+    @patch('UVSim.input', return_value="another_input")
+    def test_read_different_location(self, mock_input):
+        UVSim.read(50)
+        self.assertEqual(UVSim.words[50], "another_input")
+
+    @patch('UVSim.input', return_value="")
+    def test_read_empty_input(self, mock_input):
+        UVSim.read(0)
+        self.assertEqual(UVSim.words[0], "")
+
+    @patch('sys.stdout', new_callable=StringIO)
+    @patch('UVSim.input', return_value="test_output")
+    def test_read_output_message(self, mock_input, mock_stdout):
+        UVSim.read(25)
+        expected_output = 'Writing "test_output" to register 25.\n'
+        self.assertEqual(mock_stdout.getvalue(), expected_output)
 
 if __name__ == '__main__':
     unittest.main()
