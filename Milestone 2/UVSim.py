@@ -180,6 +180,7 @@ def main():
                     break
                 case _:
                     print(f"Unrecognized operation code: {operation}, skipping this operation")
+                    pointer += 1
         except Exception as e:
             print(f"Error encountered: {str(e)}")
             print("Continuing with the next instruction.")
