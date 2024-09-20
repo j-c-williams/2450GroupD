@@ -18,7 +18,7 @@ class TestBranchNegFunction(unittest.TestCase):
         UVSim.pointer = 0
         UVSim.accumulator = 1
         UVSim.branch_neg(99)
-        self.assertEqual(UVSim.pointer, 0) # branch_neg does not branch
+        self.assertEqual(UVSim.pointer, 1) # branch_neg does not branch, but moves to the next word
 
     def test_branch_neg_out_of_bounds_pos(self):
         self.assertRaises(IndexError, UVSim.branch_neg, 999999)
