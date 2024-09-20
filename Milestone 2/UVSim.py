@@ -1,4 +1,4 @@
-def read(location, words):
+def write(location, words):
     if location < 0:
         raise IndexError(f"Negative memory location: {location} is not allowed.")
     elif location >= len(words):
@@ -8,8 +8,8 @@ def read(location, words):
     print(f"Value at location {location}: {words[location]}")
     return words[location] if words[location] is not None else ""
 
-def write(location):
-    print(words[location])
+def read(location):
+    pass
 
 def load(location):
     global accumulator 
@@ -25,16 +25,28 @@ def store(location):
     words[location] = accumulator
 
 def add(location):
-    print(f"Adding {word} to {accumulator}")
-    acclimator = (int(acclimator) + int(words[location])) % 10000
+    global accumulator
+    print(f"Adding contents of address {location}({words[location]}) to {accumulator}")
 
+    if (int(accumulator) + int(words[location])) > 0:
+        accumulator = (int(accumulator) + int(words[location])) % 10000
+    else: accumulator = -(abs(int(accumulator) + int(words[location]))%10000)
+    
 def subtract(location):
-    print(f"Subtracting {word} from {accumulator}")
-    acclimator = (int(acclimator) - int(words[location])) % 10000
+    global accumulator
+    print(f"Subtracting contents of address {location}({words[location]}) from {accumulator}")
+
+    if (int(accumulator) - int(words[location])) > 0:
+        accumulator = (int(accumulator) - int(words[location])) % 10000
+    else: accumulator = -(abs(int(accumulator) - int(words[location]))%10000)
 
 def multiply(location):
-    print(f"Multiplying {word} by {accumulator}")
-    acclimator = (int(acclimator) * int(words[location])) % 10000
+    global accumulator
+    print(f"Multiplying contents of address {location}({words[location]}) by {accumulator}")
+    
+    if (int(accumulator) * int(words[location])) > 0:
+        accumulator = (int(accumulator) * int(words[location])) % 10000
+    else: accumulator = -(abs(int(accumulator) * int(words[location]))%10000)
 
 def divide(location):
     global accumulator
@@ -45,8 +57,6 @@ def divide(location):
     
     accumulator = float(accumulator) / divisor 
     print(f"Dividing: accumulator now = {accumulator}")
-
-
 
 def branch(location):
     global pointer
@@ -70,7 +80,6 @@ def branch_zero(location):
         print(f"Branchzero - acc is zero")
     else:
         print(f"Branchzero - acc is not zero")
-
 
 def halt():
     pass
@@ -100,10 +109,10 @@ def main():
         match operation:
             case "+10":
                 print("read")
-                read(location, words)
+                read(location)
             case "+11":
                 print("write")
-                write(location)
+                write(location, words)
             case "+20":
                 print("load")
                 load(location)
@@ -115,13 +124,13 @@ def main():
                 add(word)
             case "+31":
                 print("subtract")
-                subtract(word)
+                subtract(location)
             case "+32":
                 print("divide")
                 divide(location)
             case "+33":
                 print("multiply")
-                mulitply(word)
+                multiply(word)
             case "+40":
                 print("branch")
                 branch(location)
@@ -141,4 +150,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
