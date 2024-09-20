@@ -1,14 +1,14 @@
 import unittest
 from UVSim import write, words
 
-class TestReadFunction(unittest.TestCase):
+class TestWriteFunction(unittest.TestCase):
 
     def setUp(self):
         global words
         words = [""] * 100
         words[5] = "test_word"
 
-    def test_read_negative_location(self):
+    def test_write_negative_location(self):
         # Test writing from a negative location
         with self.assertRaises(IndexError):  # Should raise IndexError for negative indices
             write(-1, words)
