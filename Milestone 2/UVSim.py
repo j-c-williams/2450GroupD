@@ -11,8 +11,10 @@ def write(location, words):
     return words[location] if words[location] is not None else ""
 
 
+
 def read(location):
     pass
+
 
 def load(location):
     global accumulator 
@@ -55,6 +57,9 @@ def multiply(location):
         accumulator = (int(accumulator) * int(words[location])) % 10000
     else: accumulator = -(abs(int(accumulator) * int(words[location]))%10000)
 
+
+
+
 def divide(location):
     global accumulator
     divisor = float(words[location]) 
@@ -64,7 +69,6 @@ def divide(location):
     
     accumulator = float(accumulator) / divisor 
     print(f"Dividing: accumulator now = {accumulator}")
-
 
 def branch(location):
     global pointer
