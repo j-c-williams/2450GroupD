@@ -53,6 +53,27 @@ Notes:
 
 - The READ command interacts with the user, unlike most other commands which operate solely on the program's internal state
 
+**WRITE command use case:**
+
+- Actor: The program and the user
+- System: Memory management and output processor
+- Goal: Successfully output the value stored at a given memory location
+
+Steps:
+
+1. Parse function code ("+11" for WRITE)
+2. Extract location from the last two digits of the word
+3. Validate the memory location:
+    If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
+    If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
+4. Retrieve the value from the specified memory location
+5. Output the retrieved value to the console
+6. Move to the next instruction (increment the pointer)
+
+Exceptions:
+
+- If an invalid memory location is provided, the system raises an IndexError with an appropriate error message
+
 **STORE command use case:**
 
 - Actor: The program
@@ -69,6 +90,71 @@ Steps:
 4. Retrieve the current value of the accumulator
 5. Store the accumulator value at the specified memory location
 6. Move to the next instruction (increment the pointer)
+
+Exceptions:
+
+- If an invalid memory location is provided, the system raises an IndexError with an appropriate error message
+
+**ADD command use case:**
+
+- Actor: The program
+- System: Memory management and accumulator
+- Goal: Successfully add a value stored at a given memory location to the value of the accumulator
+
+Steps:
+
+1. Parse function code ("+30" for ADD)
+2. Extract location from the last two digits of the word
+3. Validate the memory location:
+    If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
+    If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
+4. Retrieve the value from the specified memory location
+5. Add the retrieved value to the accumulator
+6. Handle overflow by taking the result modulo 10000 or making it negative as appropriate
+7. Move to the next instruction (increment the pointer)
+
+Exceptions:
+
+- If an invalid memory location is provided, the system raises an IndexError with an appropriate error message
+
+**SUBTRACT command use case:**
+
+- Actor: The program
+- System: Memory management and accumulator
+- Goal: Successfully subtract a value stored at a given memory location from the value of the accumulator
+
+Steps:
+
+1. Parse function code ("+31" for SUBTRACT)
+2. Extract location from the last two digits of the word
+3. Validate the memory location:
+    If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
+    If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
+4. Retrieve the value from the specified memory location
+5. Subtract the retrieved value from the accumulator
+6. Handle underflow by taking the result modulo 10000 or making it negative as appropriate
+7. Move to the next instruction (increment the pointer)
+
+Exceptions:
+
+- If an invalid memory location is provided, the system raises an IndexError with an appropriate error message
+**MULTIPLY command use case:**
+
+- Actor: The program
+- System: Memory management and accumulator
+- Goal: Successfully multiply the value of the accumulator by a value stored at a given memory location
+
+Steps:
+
+1. Parse function code ("+33" for MULTIPLY)
+2. Extract location from the last two digits of the word
+3. Validate the memory location:
+    If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
+    If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
+4. Retrieve the value from the specified memory location
+5. Multiply the accumulator by the retrieved value
+6. Handle overflow by taking the result modulo 10000 or making it negative as appropriate
+7. Move to the next instruction (increment the pointer)
 
 Exceptions:
 
