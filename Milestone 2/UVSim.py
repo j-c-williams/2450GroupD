@@ -66,11 +66,6 @@ def divide(location):
     print(f"Dividing: accumulator now = {accumulator}")
 
 
-
-def mulitply(word):
-    print(f"Multiplying {word} by {accumulator}")
-    accumulator = accumulator * word    
-
 def branch(location):
     global pointer
     pointer = location
