@@ -1,4 +1,9 @@
-def read(location, words):
+class UVsimRegisters():
+    def __init__(self, word_list, accum):
+        word_list = [""] * 100
+        accum = 0
+
+def write(location, words):
     if location < 0:
         raise IndexError(f"Negative memory location: {location} is not allowed.")
     elif location >= len(words):
@@ -9,8 +14,8 @@ def read(location, words):
     return words[location] if words[location] is not None else ""
 
 
-def write(location):
-    print(words[location])
+def read(location):
+    pass
 
 def load(location):
     global accumulator 
@@ -25,12 +30,33 @@ def store(location):
     print(f"Storing {accumulator} into location {location}")
     words[location] = accumulator
 
-def add(word):
-    print(f"Adding {word} to {accumulator}")
-    accumulator = accumulator + word
+def add(location):
+    global accumulator
+    print(f"Adding contents of address {location}({words[location]}) to {accumulator}")
 
-def subtract(word):
-    print(f"Subtracting {word} from {accumulator}")
+    if (int(accumulator) + int(words[location])) > 0:
+        accumulator = (int(accumulator) + int(words[location])) % 10000
+    else: accumulator = -(abs(int(accumulator) + int(words[location]))%10000)
+    
+    
+
+def subtract(location):
+    global accumulator
+    print(f"Subtracting contents of address {location}({words[location]}) from {accumulator}")
+
+    if (int(accumulator) - int(words[location])) > 0:
+        accumulator = (int(accumulator) - int(words[location])) % 10000
+    else: accumulator = -(abs(int(accumulator) - int(words[location]))%10000)
+    
+
+
+def multiply(location):
+    global accumulator
+    print(f"Multiplying contents of address {location}({words[location]}) by {accumulator}")
+    
+    if (int(accumulator) * int(words[location])) > 0:
+        accumulator = (int(accumulator) * int(words[location])) % 10000
+    else: accumulator = -(abs(int(accumulator) * int(words[location]))%10000)
 
 def divide(location):
     global accumulator
