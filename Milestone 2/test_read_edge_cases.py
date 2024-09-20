@@ -1,28 +1,32 @@
 import unittest
-from UVSim import read, words
+from unittest.mock import patch
+import UVSim
 
-class TestReadFunction(unittest.TestCase):
+class TestReadFunctionEdgeCases(unittest.TestCase):
 
     def setUp(self):
-        global words
-        words = [""] * 100
-        words[5] = "test_word"
+        # Reset the words list before each test
+        UVSim.words = [""] * 100
 
-    def test_read_negative_location(self):
-        # Test reading from a negative location
-        with self.assertRaises(IndexError):  # Should raise IndexError for negative indices
-            read(-1, words)
+    @patch('UVSim.input', return_value="test_input")
+    def test_read_negative_location(self, mock_input):
+        with self.assertRaises(IndexError):
+            UVSim.read(-1)
 
-    def test_read_out_of_bounds_location(self):
-        # Test reading from a location outside the bounds of the array
-        with self.assertRaises(IndexError):  # Should raise IndexError for out-of-bounds indices
-            read(150, words)  # Assume words only has 100 elements
+    @patch('UVSim.input', return_value="test_input")
+    def test_read_out_of_bounds_location(self, mock_input):
+        with self.assertRaises(IndexError):
+            UVSim.read(100)
 
-    def test_read_none_value(self):
-        # Test reading a None value from the array
-        words[20] = None  # Set location 20 to None
-        result = read(20, words)
-        self.assertEqual(result, "")  # Expect an empty string for None values
+    @patch('UVSim.input', return_value="test_input")
+    def test_read_large_valid_location(self, mock_input):
+        UVSim.read(99)  # Last valid index
+        self.assertEqual(UVSim.words[99], "test_input")
+
+    @patch('UVSim.input', return_value="a" * 1000)
+    def test_read_very_long_input(self, mock_input):
+        UVSim.read(0)
+        self.assertEqual(UVSim.words[0], "a" * 1000)
 
 if __name__ == '__main__':
     unittest.main()
