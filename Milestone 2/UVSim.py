@@ -8,7 +8,6 @@ def read(location, words):
     print(f"Value at location {location}: {words[location]}")
     return words[location] if words[location] is not None else ""
 
-
 def write(location):
     print(words[location])
 
@@ -25,12 +24,17 @@ def store(location):
     print(f"Storing {accumulator} into location {location}")
     words[location] = accumulator
 
-def add(word):
+def add(location):
     print(f"Adding {word} to {accumulator}")
-    accumulator = accumulator + word
+    acclimator = (int(acclimator) + int(words[location])) % 10000
 
-def subtract(word):
+def subtract(location):
     print(f"Subtracting {word} from {accumulator}")
+    acclimator = (int(acclimator) - int(words[location])) % 10000
+
+def multiply(location):
+    print(f"Multiplying {word} by {accumulator}")
+    acclimator = (int(acclimator) * int(words[location])) % 10000
 
 def divide(location):
     global accumulator
@@ -43,10 +47,6 @@ def divide(location):
     print(f"Dividing: accumulator now = {accumulator}")
 
 
-
-def mulitply(word):
-    print(f"Multiplying {word} by {accumulator}")
-    accumulator = accumulator * word    
 
 def branch(location):
     global pointer
