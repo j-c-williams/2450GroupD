@@ -124,7 +124,6 @@ def main():
                 add(word)
             case "+31":
                 print("subtract")
-                print(location)
                 subtract(location)
             case "+32":
                 print("divide")
