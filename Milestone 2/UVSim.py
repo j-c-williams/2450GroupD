@@ -12,8 +12,14 @@ def read(location):
     pass
 
 def load(location):
+    if location < 0 or location > 99:
+        raise IndexError("Load attempted to load value out of bounds")
     global accumulator 
-    accumulator = words[location]
+    data = words[location]
+    if data == "":
+        accumulator = 0
+    else:
+        accumulator = int(data)
 
 def store(location):
     if location < 0:
@@ -59,11 +65,15 @@ def divide(location):
     print(f"Dividing: accumulator now = {accumulator}")
 
 def branch(location):
+    if location < 0 or location > 99:
+        raise IndexError("Branch attempted to set pointer out of bounds")
     global pointer
     pointer = location
     print(f"Branching to location {location}")
 
 def branch_neg(location):
+    if location < 0 or location > 99:
+        raise IndexError("Branch_neg attempted to set pointer out of bounds")
     global accumulator
     accumulator = int(accumulator)
     if accumulator < 0:
@@ -71,8 +81,12 @@ def branch_neg(location):
         print(f"Branchneg - acc is negative")
     else:
         print(f"Branchneg - acc is not negative")
+        global pointer
+        pointer += 1
 
 def branch_zero(location):
+    if location < 0 or location > 99:
+        raise IndexError("Branchzero attempted to set pointer out of bounds")
     global accumulator
     accumulator = int(accumulator)
     if accumulator == 0:
@@ -80,6 +94,8 @@ def branch_zero(location):
         print(f"Branchzero - acc is zero")
     else:
         print(f"Branchzero - acc is not zero")
+        global pointer
+        pointer += 1
 
 def halt():
     pass
@@ -110,27 +126,35 @@ def main():
             case "+10":
                 print("read")
                 read(location)
+                pointer += 1
             case "+11":
                 print("write")
                 write(location, words)
+                pointer += 1
             case "+20":
                 print("load")
                 load(location)
+                pointer += 1
             case "+21":
                 print("store")
                 store(location)
+                pointer += 1
             case "+30":
                 print("add")
-                add(location)
+                add(word)
+                pointer += 1
             case "+31":
                 print("subtract")
                 subtract(location)
+                pointer += 1
             case "+32":
                 print("divide")
                 divide(location)
+                pointer += 1
             case "+33":
                 print("multiply")
-                multiply(location)
+                multiply(word)
+                pointer += 1
             case "+40":
                 print("branch")
                 branch(location)
@@ -146,7 +170,7 @@ def main():
             case _:
                 raise ValueError(f"Unrecognized operation code: {operation}")
 
-        pointer += 1
+
 
 if __name__ == "__main__":
     main()
