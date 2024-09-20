@@ -1,7 +1,4 @@
-class UVsimRegisters():
-    def __init__(self, word_list, accum):
-        word_list = [""] * 100
-        accum = 0
+
 
 def write(location, words):
     if location < 0:
