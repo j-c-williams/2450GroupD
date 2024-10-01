@@ -86,74 +86,66 @@ class LogicalOperator():
         else:
             self.pointer += 1
 
-def read_txt_file(file_path):
-    global words
-    with open(file_path, 'r') as f:
-        for i, word in enumerate(f.read().split()):
-            words[i] = word
+    def read_txt_file(self, file_path):
+        with open(file_path, 'r') as f:
+            for i, word in enumerate(f.read().split()):
+                self.words[i] = word
     
+    def run_file(self, logic):
+        UVsimLogic = logic
+        while True:
+            
+            if UVsimLogic.pointer >= len(UVsimLogic.words):
+                print("End of program reached. Exiting.")
+                break
 
+            word = UVsimLogic.words[UVsimLogic.pointer]
+            if word.strip() == "":
+                UVsimLogic.pointer += 1
+                continue
 
-def main():
-    file_input = input('What is the file location? ')
-    read_txt_file(file_input)
-    UVsimLogic = LogicalOperator()
-    while True:
-        
-        if UVsimLogic.pointer >= len(UVsimLogic.words):
-            print("End of program reached. Exiting.")
-            break
+            operation = word[:3]  # Grab only the first 3 characters (operation code)
+            location = int(word[3:])   # Grab the last 2 characters for the location
 
-        word = UVsimLogic.words[UVsimLogic.pointer]
-        if word.strip() == "":
-            UVsimLogic.pointer += 1
-            continue
-
-        operation = word[:3]  # Grab only the first 3 characters (operation code)
-        location = int(word[3:])   # Grab the last 2 characters for the location
-
-        try:
-            match operation:
-                case "+10":
-                    UVsimLogic.read(location)
-                    pointer += 1
-                case "+11":
-                    UVsimLogic.write(location)
-                    pointer += 1
-                case "+20":
-                    UVsimLogic.load(location)
-                    pointer += 1
-                case "+21":
-                    UVsimLogic.store(location)
-                    pointer += 1
-                case "+30":
-                    UVsimLogic.add(location)
-                    pointer += 1
-                case "+31":
-                    UVsimLogic.subtract(location)
-                    pointer += 1
-                case "+32":
-                    UVsimLogic.divide(location)
-                    pointer += 1
-                case "+33":
-                    UVsimLogic.multiply(location)
-                    pointer += 1
-                case "+40":
-                    UVsimLogic.branch(location)
-                case "+41":
-                    UVsimLogic.branch_neg(location)
-                case "+42":
-                    UVsimLogic.branch_zero(location)
-                case "+43":
-                    print("The program has been halted.")
-                    break
-                case _:
-                    print(f"Unrecognized operation code: {operation}, skipping this operation")
-                    UVsimLogic.pointer += 1
-        except Exception as e:
-            print(f"Error encountered: {str(e)}")
-            print("Continuing with the next instruction.")
-            UVsimLogic.pointer += 1
-
-if __name__ == "__main__":
-    main()
+            try:
+                match operation:
+                    case "+10":
+                        UVsimLogic.read(location)
+                        pointer += 1
+                    case "+11":
+                        UVsimLogic.write(location)
+                        pointer += 1
+                    case "+20":
+                        UVsimLogic.load(location)
+                        pointer += 1
+                    case "+21":
+                        UVsimLogic.store(location)
+                        pointer += 1
+                    case "+30":
+                        UVsimLogic.add(location)
+                        pointer += 1
+                    case "+31":
+                        UVsimLogic.subtract(location)
+                        pointer += 1
+                    case "+32":
+                        UVsimLogic.divide(location)
+                        pointer += 1
+                    case "+33":
+                        UVsimLogic.multiply(location)
+                        pointer += 1
+                    case "+40":
+                        UVsimLogic.branch(location)
+                    case "+41":
+                        UVsimLogic.branch_neg(location)
+                    case "+42":
+                        UVsimLogic.branch_zero(location)
+                    case "+43":
+                        print("The program has been halted.")
+                        break
+                    case _:
+                        print(f"Unrecognized operation code: {operation}, skipping this operation")
+                        UVsimLogic.pointer += 1
+            except Exception as e:
+                print(f"Error encountered: {str(e)}")
+                print("Continuing with the next instruction.")
+                UVsimLogic.pointer += 1
