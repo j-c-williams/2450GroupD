@@ -27,7 +27,7 @@ class LogicalOperator():
             self.wait_for_input = False
         else:
             # used stored input
-            interface.add_output_text(f"{self.input}")
+            interface.add_output_text(f"Input: {self.input}")
             self.words[location] = self.input
             interface.add_output_text(f"Word {self.input} read into index {location}")
             self.input = ""
@@ -38,6 +38,8 @@ class LogicalOperator():
             self.run_command()
 
     def handle_input(self, user_input):
+        if len(user_input) == 0:
+            return
         if not self.check_int(user_input):
             self.interface.add_output_text("Input is invalid, try again.")
             return
@@ -189,7 +191,7 @@ class LogicalOperator():
                     self.branch_zero(location)
                     self.run_command()
                 case "+43":
-                    self.interface.add_output_text("Program is halted.")
+                    self.interface.add_output_text("Program is halted.\n")
                     print("The program has been halted.")
                 case _:
                     print(f"Unrecognized operation code: {operation}, skipping this operation")

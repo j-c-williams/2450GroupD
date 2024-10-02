@@ -23,9 +23,8 @@ class Interface():
         window.title(f"Simple Text Editor - {file_path}")
 
     def run_file(self):
-        logic.run_command()
         logic.reset_to_default()
-        
+        logic.run_command()
 
     def set_file_label_text(self, text):
         file_text["text"] = text
