@@ -1,22 +1,59 @@
 class LogicalOperator():
-    def __init__(self, words = [""] * 99, accumulator = 0, pointer = 0):
+    def __init__(self, interface, words = [""] * 99, accumulator = 0, pointer = 0):
         self.pointer = pointer
         self.accumulator = accumulator
         self.words = words
+        self.interface = interface
+
+        self.input = ""
+        # wait for input - true if input hasn't been read yet, false if input is successfully handled
+        self.wait_for_input = True 
 
     def write(self, location):
         if location < 0:
             raise IndexError(f"Negative memory location: {location} is not allowed.")
         elif location >= len(self.words):
             raise IndexError(f"Memory location {location} is out of bounds.")
-        print(self.words[location])
+        self.interface.add_output_text(self.words[location])
         return self.words[location] if self.words[location] is not None else ""
 
-    def read(self, location):
+    def read(self, location, interface):
         if location < 0 or location >= len(self.words):
             raise IndexError(f"Invalid memory location: {location}")
-        user_input = input(f"What would you like to write to register {location}? ")
-        self.words[location] = user_input
+
+        if self.wait_for_input:
+            interface.add_output_text(f"What would you like to write to register {location}? ")
+            # Ready to read again and get input
+            self.wait_for_input = False
+        else:
+            # used stored input
+            interface.add_output_text(f"{self.input}")
+            self.words[location] = self.input
+            interface.add_output_text(f"Word {self.input} read into index {location}")
+            self.input = ""
+            self.wait_for_input = True
+
+            # Conditionally go to the next command
+            self.pointer += 1
+            self.run_command()
+
+    def handle_input(self, user_input):
+        if not self.check_int(user_input):
+            self.interface.add_output_text("Input is invalid, try again.")
+            return
+        if int(user_input) > -10_000 and int(user_input) < 10_000:
+            self.input = user_input
+            if not self.wait_for_input:
+                self.run_command()
+        else:
+            self.interface.add_output_text("Input out of range, tray again.")
+            return
+
+
+    def check_int(self, s):
+        if s[0] in ('-', '+'):
+            return s[1:].isdigit()
+        return s.isdigit()
 
 
     def load(self, location):
@@ -91,61 +128,82 @@ class LogicalOperator():
             for i, word in enumerate(f.read().split()):
                 self.words[i] = word
     
-    def run_file(self, logic):
-        UVsimLogic = logic
-        while True:
-            
-            if UVsimLogic.pointer >= len(UVsimLogic.words):
-                print("End of program reached. Exiting.")
-                break
+    def run_command(self):
+        # use self instead of defining an instance
+        
+        # Run command now has to be called by the instructions to be run again at the next command.
+        # By default, only one command is executed and resolved so that it can always be paused to get user input.
 
-            word = UVsimLogic.words[UVsimLogic.pointer]
-            if word.strip() == "":
-                UVsimLogic.pointer += 1
-                continue
+        if self.pointer >= len(self.words):
+            print("End of program reached. Exiting.")
 
-            operation = word[:3]  # Grab only the first 3 characters (operation code)
-            location = int(word[3:])   # Grab the last 2 characters for the location
+        word = self.words[self.pointer]
+        if word.strip() == "":
+            self.pointer += 1
 
-            try:
-                match operation:
-                    case "+10":
-                        UVsimLogic.read(location)
-                        pointer += 1
-                    case "+11":
-                        UVsimLogic.write(location)
-                        pointer += 1
-                    case "+20":
-                        UVsimLogic.load(location)
-                        pointer += 1
-                    case "+21":
-                        UVsimLogic.store(location)
-                        pointer += 1
-                    case "+30":
-                        UVsimLogic.add(location)
-                        pointer += 1
-                    case "+31":
-                        UVsimLogic.subtract(location)
-                        pointer += 1
-                    case "+32":
-                        UVsimLogic.divide(location)
-                        pointer += 1
-                    case "+33":
-                        UVsimLogic.multiply(location)
-                        pointer += 1
-                    case "+40":
-                        UVsimLogic.branch(location)
-                    case "+41":
-                        UVsimLogic.branch_neg(location)
-                    case "+42":
-                        UVsimLogic.branch_zero(location)
-                    case "+43":
-                        print("The program has been halted.")
-                        break
-                    case _:
-                        print(f"Unrecognized operation code: {operation}, skipping this operation")
-                        UVsimLogic.pointer += 1
-            except Exception as e:
-                print(f"Error encountered: {str(e)}")
-                print("Continuing with the next instruction.")
-                UVsimLogic.pointer += 1
+        operation = word[:3]  # Grab only the first 3 characters (operation code)
+        location = int(word[3:])   # Grab the last 2 characters for the location
+
+        try:
+            match operation:
+                case "+10":
+                    self.read(location, self.interface)
+                    # Repeat executing the read line over and over until input is handled and ready to accept.
+                        # self.pointer += 1
+                        # self.run_command()
+                case "+11":
+                    self.write(location)
+                    self.pointer += 1
+                    self.run_command()
+                case "+20":
+                    self.load(location)
+                    self.pointer += 1
+                    self.run_command()
+                case "+21":
+                    self.store(location)
+                    self.pointer += 1
+                    self.run_command()
+                case "+30":
+                    self.add(location)
+                    self.pointer += 1
+                    self.run_command()
+                case "+31":
+                    self.subtract(location)
+                    pointer += 1
+                    self.run_command()
+                case "+32":
+                    self.divide(location)
+                    pointer += 1
+                    self.run_command()
+                case "+33":
+                    self.multiply(location)
+                    pointer += 1
+                    self.run_command()
+                case "+40":
+                    self.branch(location)
+                    self.run_command()
+                case "+41":
+                    self.branch_neg(location)
+                    self.run_command()
+                case "+42":
+                    self.branch_zero(location)
+                    self.run_command()
+                case "+43":
+                    self.interface.add_output_text("Program is halted.")
+                    print("The program has been halted.")
+                case _:
+                    print(f"Unrecognized operation code: {operation}, skipping this operation")
+                    self.pointer += 1
+        except Exception as e:
+            print(f"Error encountered: {str(e)}")
+            print("Continuing with the next instruction.")
+            self.pointer += 1
+        
+    
+    def reset_to_default(self):
+        # Resets the pointer and accumulator and is called after a file is run.
+        # This makes it able to run the same program immediately after it finishes running once.
+        # Words is not reset because we want the current program to stay loaded.
+        self.pointer = 0
+        self.accumulator = 0
+        # self.words = [""] * 99
