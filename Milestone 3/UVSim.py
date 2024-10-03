@@ -1,13 +1,16 @@
-class LogicalOperator():
-    def __init__(self, interface, words = [""] * 99, accumulator = 0, pointer = 0):
+class LogicalOperator:
+    def __init__(self, interface, file_handler, words=None, accumulator=0, pointer=0):
         self.pointer = pointer
         self.accumulator = accumulator
-        self.words = words
+        self.file_handler = file_handler
+        self.words = words or [""] * 99
         self.interface = interface
-
         self.input = ""
-        # wait for input - true if input hasn't been read yet, false if input is successfully handled
-        self.wait_for_input = True 
+        self.wait_for_input = True
+    
+    def load_file(self, file_path):
+        #Uses the FileHandler to load a file.
+        self.words = self.file_handler.read_txt_file(file_path)
 
     def write(self, location):
         if location < 0:
@@ -50,7 +53,6 @@ class LogicalOperator():
         else:
             self.interface.add_output_text("Input out of range, tray again.")
             return
-
 
     def check_int(self, s):
         if s[0] in ('-', '+'):
@@ -124,11 +126,6 @@ class LogicalOperator():
             self.branch(location)
         else:
             self.pointer += 1
-
-    def read_txt_file(self, file_path):
-        with open(file_path, 'r') as f:
-            for i, word in enumerate(f.read().split()):
-                self.words[i] = word
     
     def run_command(self):
         # use self instead of defining an instance
@@ -171,15 +168,15 @@ class LogicalOperator():
                     self.run_command()
                 case "+31":
                     self.subtract(location)
-                    pointer += 1
+                    self.pointer += 1
                     self.run_command()
                 case "+32":
                     self.divide(location)
-                    pointer += 1
+                    self.pointer += 1
                     self.run_command()
                 case "+33":
                     self.multiply(location)
-                    pointer += 1
+                    self.pointer += 1
                     self.run_command()
                 case "+40":
                     self.branch(location)
