@@ -51,7 +51,7 @@ class LogicalOperator:
             if not self.wait_for_input:
                 self.run_command()
         else:
-            self.interface.add_output_text("Input out of range, tray again.")
+            self.interface.add_output_text("Input out of range, try again.")
             return
 
     def check_int(self, s):
