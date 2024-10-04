@@ -63,7 +63,7 @@ window.rowconfigure(1,weight=1)
 frm_buttons = tk.Frame(window, relief=tk.RAISED, bd=2, width=900)
 frm_buttons.grid(row=0, column=0, sticky="ns")
 
-btn_open = tk.Button(frm_buttons, text="Open", command=interface.open_file)
+btn_open = tk.Button(frm_buttons, text="Open File", command=interface.open_file)
 btn_open.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
 
 btn_run = tk.Button(frm_buttons, text="Run File", command=interface.run_file)
