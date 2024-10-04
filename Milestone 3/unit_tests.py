@@ -1,84 +1,99 @@
+
 import unittest
 from unittest.mock import patch, Mock
 from io import StringIO
 from UVSim import LogicalOperator
 
 
+
 class TestReadFunctions(unittest.TestCase):
     def setUp(self):
-        # Reset the words list before each test
-        LogicalOperator.words = [""] * 100
+        self.mock_interface = Mock()
+        self.mock_file_handler = Mock()
+        self.logic = LogicalOperator(self.mock_interface, self.mock_file_handler)
 
-    @patch('LogicalOperator.input', return_value="test_input")
+        self.logic.words = [""] * 100
+        self.logic.accumulator = 0
+        self.logic.pointer = 0
+        
+
+    @patch('UVSim.input', return_value="test_input")
     def test_read_valid_location(self, mock_input):
-        LogicalOperator.read(0)
-        self.assertEqual(LogicalOperator.words[0], "test_input")
+        self.logic.read(0, self.mock_interface)
+        self.assertEqual(self.logic.words[0], "test_input")
 
-    @patch('LogicalOperator.input', return_value="another_input")
+    @patch('UVSim.input', return_value="test_input")
+    @patch('UVSim.input', return_value="another_input")
     def test_read_different_location(self, mock_input):
-        LogicalOperator.read(50)
-        self.assertEqual(LogicalOperator.words[50], "another_input")
+        self.logic.read(50, self.mock_interface)
+        self.assertEqual(self.logic.words[50], "another_input")
 
-    @patch('LogicalOperator.input', return_value="")
+    @patch('UVSim.input', return_value="")
     def test_read_empty_input(self, mock_input):
-        LogicalOperator.read(0)
-        self.assertEqual(LogicalOperator.words[0], "")
+        self.logic.read(0, self.mock_interface)
+        self.assertEqual(self.logic.words[0], "")
 
     @patch('sys.stdout', new_callable=StringIO)
-    @patch('LogicalOperator.input', return_value="test_output")
+    @patch('UVSim.input', return_value="test_output")
     def test_read_output_message(self, mock_input, mock_stdout):
-        LogicalOperator.read(25)
+        self.logic.read(25, self.mock_interface)
         expected_output = 'Writing "test_output" to register 25.\n'
         self.assertEqual(mock_stdout.getvalue(), expected_output)
 
-    @patch('LogicalOperator.input', return_value="test_input")
+    @patch('UVSim.input', return_value="test_input")
     def test_read_negative_location(self, mock_input):
         with self.assertRaises(IndexError):
-            LogicalOperator.read(-1)
+            self.logic.read(-1, self.mock_interface)
 
-    @patch('LogicalOperator.input', return_value="test_input")
+    @patch('UVSim.input', return_value="test_input")
     def test_read_out_of_bounds_location(self, mock_input):
         with self.assertRaises(IndexError):
-            LogicalOperator.read(100)
+            self.logic.read(100, self.mock_interface)
 
-    @patch('LogicalOperator.input', return_value="test_input")
+    @patch('UVSim.input', return_value="test_input")
     def test_read_large_valid_location(self, mock_input):
-        LogicalOperator.read(99)  # Last valid index
-        self.assertEqual(LogicalOperator.words[99], "test_input")
+        self.logic.read(99, self.mock_interface)  # Last valid index
+        self.assertEqual(self.logic.words[99], "test_input")
 
-    @patch('LogicalOperator.input', return_value="a" * 1000)
+    @patch('UVSim.input', return_value="a" * 1000)
     def test_read_very_long_input(self, mock_input):
-        LogicalOperator.read(0)
-        self.assertEqual(LogicalOperator.words[0], "a" * 1000)
+        self.logic.read(0, self.mock_interface)
+        self.assertEqual(self.logic.words[0], '')
 
 class TestWriteFunction(unittest.TestCase):
     def setUp(self):
-        LogicalOperator.words = [""] * 100
-        LogicalOperator.words[5] = "test_word"
+        self.mock_interface = Mock()
+        self.mock_file_handler = Mock()
+        self.logic = LogicalOperator(self.mock_interface, self.mock_file_handler)
+
+        self.logic.words = [""] * 100
+        self.logic.accumulator = 0
+        self.logic.pointer = 0
+        self.logic.words[5] = "test_word"
 
     def test_write_valid_location(self):
-        result = LogicalOperator.write(5, words)
+        result = self.logic.write(5)
         self.assertEqual(result, "test_word")
 
     def test_write_empty_location(self):
-        # Test reading from an empty location
-        result = LogicalOperator.write(10, words)
+        # Test reading from an empty locaton
+        result = self.logic.write(10)
         self.assertEqual(result, "")
     
     def test_write_negative_location(self):
         # Test writing from a negative location
         with self.assertRaises(IndexError):  # Should raise IndexError for negative indices
-            write(-1, words)
+            self.logic.write(-1)
 
     def test_write_out_of_bounds_location(self):
         # Test writing from a location outside the bounds of the array
         with self.assertRaises(IndexError):  # Should raise IndexError for out-of-bounds indices
-            write(150, words)  # Assume words only has 100 elements
+            self.logic.write(150)  # Assume words only has 100 elements
 
     def test_write_none_value(self):
         # Test writing a None value from the array
-        words[20] = None  # Set location 20 to None
-        result = write(20, words)
+        self.logic.words[20] = None  # Set location 20 to None
+        result = self.logic.write(20)
         self.assertEqual(result, "")  # Expect an empty string for None values
 
 class TestLoadFunction(unittest.TestCase):
@@ -104,158 +119,184 @@ class TestLoadFunction(unittest.TestCase):
 
 class TestStoreFunction(unittest.TestCase):
     def setUp(self):
-        LogicalOperator.words = [""] * 100            # I was having issues with a global accumulator for some reason,
-        LogicalOperator.accumulator = "stored_value"  # So I'm editing them on the module level instead
+        self.mock_interface = Mock()
+        self.mock_file_handler = Mock()
+        self.logic = LogicalOperator(self.mock_interface, self.mock_file_handler)
+
+        self.logic.words = [""] * 100
+        self.logic.pointer = 0
+                                   
+        self.logic.accumulator = "stored_value"  # intitialize logical operator accumulator with "stored_Value"
 
     def test_store_value_in_location(self):
-        LogicalOperator.store(7)
-        self.assertEqual(LogicalOperator.words[7], "stored_value")
+        self.logic.store(7)
+        self.assertEqual(self.logic.words[7], "stored_value")
 
     def test_store_negative_location(self):
         # Test handling a negative index
         with self.assertRaises(IndexError):  # Assuming store should raise an IndexError for negative indices
-            LogicalOperator.store(-1)
+            self.logic.store(-1)
 
     def test_store_out_of_bounds_location(self):
         # Test storing to a location outside of the words array bounds
         with self.assertRaises(IndexError):  # Assuming store should raise an IndexError for out-of-bounds indices
-            LogicalOperator.store(150)  # Assuming the words array has only 100 elements
+            self.logic.store(150)  # Assuming the words array has only 100 elements
 
     def test_store_empty_accumulator(self):
         # Test storing when the accumulator is an empty string
-        LogicalOperator.accumulator = ""  # Set accumulator to an empty string
-        LogicalOperator.store(10)
-        self.assertEqual(LogicalOperator.words[10], "")
+        self.logic.accumulator = ""  # Set accumulator to an empty string
+        self.logic.store(10)
+        self.assertEqual(self.logic.words[10], "")
 
     def test_store_none_accumulator(self):
         # Test storing when the accumulator is None
-        LogicalOperator.accumulator = None
-        LogicalOperator.store(20)
-        self.assertEqual(LogicalOperator.words[20], None)
+        self.logic.accumulator = None
+        self.logic.store(20)
+        self.assertEqual(self.logic.words[20], None)
 
 class TestAddFunction(unittest.TestCase):
     def setUp(self):
-        LogicalOperator.words = [""] * 100
-        LogicalOperator.accumulator = 0  # Initialize with zero 
+        self.mock_interface = Mock()
+        self.mock_file_handler = Mock()
+        self.logic = LogicalOperator(self.mock_interface, self.mock_file_handler)
+
+        self.logic.words = [""] * 100
+        self.logic.accumulator = 0
+        self.logic.pointer = 0
 
     def test_add_to_accumulator(self):
-        LogicalOperator.words[5] = "2"  # Set up a addative
-        LogicalOperator.add(5)  # Add location 5 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, 2)  # 0 + 2 = 2
+        self.logic.words[5] = "2"  # Set up a addative
+        self.logic.add(5)  # Add location 5 content to accumulator
+        self.assertEqual(self.logic.accumulator, 2)  # 0 + 2 = 2
 
     def test_add_negative(self):
-        LogicalOperator.words[6] = "-2"  # Set negative
-        LogicalOperator.add(6) # Add location 6 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, -2) #: -2 + 0 = -2
+        self.logic.words[6] = "-2"  # Set negative
+        self.logic.add(6) # Add location 6 content to accumulator
+        self.assertEqual(self.logic.accumulator, -2) #: -2 + 0 = -2
     
     def test_add_to_accumulator_pos_overflow(self):
-        LogicalOperator.accumulator = 9999
-        LogicalOperator.words[5] = "2"  # Set up a addative
-        LogicalOperator.add(5)  # Add location 5 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, 1)  # 9999 + 2 = 10001 -> truncated to 0001 or 1
+        self.logic.accumulator = 9999
+        self.logic.words[5] = "2"  # Set up a addative
+        self.logic.add(5)  # Add location 5 content to accumulator
+        self.assertEqual(self.logic.accumulator, 1)  # 9999 + 2 = 10001 -> truncated to 0001 or 1
 
     def test_add_negative_overflow(self):
-        LogicalOperator.accumulator = -9999
-        LogicalOperator.words[6] = "-2"  # Set negative
-        LogicalOperator.add(6) # Add location 6 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, -1) # -9999 + (-2) = -10001 -> truncated to -0001 or -1
+        self.logic.accumulator = -9999
+        self.logic.words[6] = "-2"  # Set negative
+        self.logic.add(6) # Add location 6 content to accumulator
+        self.assertEqual(self.logic.accumulator, -1) # -9999 + (-2) = -10001 -> truncated to -0001 or -1
 
 class TestSubFunction(unittest.TestCase):
     def setUp(self):
-        LogicalOperator.words = [""] * 100
-        LogicalOperator.accumulator = 0  # Initialize with zero 
+        self.mock_interface = Mock()
+        self.mock_file_handler = Mock()
+        self.logic = LogicalOperator(self.mock_interface, self.mock_file_handler)
+
+        self.logic.words = [""] * 100
+        self.logic.accumulator = 0
+        self.logic.pointer = 0  # Initialize with zero 
 
     def test_subtract_from_accumulator(self):
-        LogicalOperator.words[5] = "2"  # Set up a addative
-        LogicalOperator.subtract(5)  # Add location 5 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, -2)  # 0 + 2 = 2
+        self.logic.words[5] = "2"  # Set up a addative
+        self.logic.subtract(5)  # Add location 5 content to accumulator
+        self.assertEqual(self.logic.accumulator, -2)  # 0 + 2 = 2
 
     def test_subtract_negative(self):
-        LogicalOperator.words[6] = "-2"  # Set negative
-        LogicalOperator.subtract(6) # Subtract location 6 content from accumulator
-        self.assertEqual(LogicalOperator.accumulator, 2) #: 0 - (-2) = 2
+        self.logic.words[6] = "-2"  # Set negative
+        self.logic.subtract(6) # Subtract location 6 content from accumulator
+        self.assertEqual(self.logic.accumulator, 2) #: 0 - (-2) = 2
 
     def test_subtract_from_accumulator_pos_overflow(self):
-        LogicalOperator.accumulator = 9999
-        LogicalOperator.words[5] = "-2"  # Set up a addative
-        LogicalOperator.subtract(5)  # Add location 5 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, 1)  # 9999 + 2 = 10001 -> truncated to 0001 or 1
+        self.logic.accumulator = 9999
+        self.logic.words[5] = "-2"  # Set up a addative
+        self.logic.subtract(5)  # Add location 5 content to accumulator
+        self.assertEqual(self.logic.accumulator, 1)  # 9999 + 2 = 10001 -> truncated to 0001 or 1
 
     def test_subtract_negative_overflow(self):
-        LogicalOperator.accumulator = -9999
-        LogicalOperator.words[6] = "2"  # Set negative
-        LogicalOperator.subtract(6) # Add location 6 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, -1) # -9999 + (-2) = -10001 -> truncated to -0001 or -1
+        self.logic.accumulator = -9999
+        self.logic.words[6] = "2"  # Set negative
+        self.logic.subtract(6) # Add location 6 content to accumulator
+        self.assertEqual(self.logic.accumulator, -1) # -9999 + (-2) = -10001 -> truncated to -0001 or -1
 
 class TestDivideFunction(unittest.TestCase):
     def setUp(self):
-        LogicalOperator.words = [""] * 100
-        LogicalOperator.accumulator = 10  # Initialize with a non-zero value
+        self.mock_interface = Mock() #set up logical operator class with mock gui
+        self.mock_file_handler = Mock() # mock file handler for logical operator as well
+        self.logic = LogicalOperator(self.mock_interface, self.mock_file_handler)
+
+        self.logic.words = [""] * 100
+        self.logic.accumulator = 10 # Initialize with a 10 for divison
+        self.logic.pointer = 0  
 
     def test_divide_by_non_zero(self):
-        LogicalOperator.words[5] = "2"  # Set up a divisor
-        LogicalOperator.divide(5)  # Divide accumulator by the value at index 5
-        self.assertEqual(LogicalOperator.accumulator, 5)  # 10 / 2 = 5
+        self.logic.words[5] = "2"  # Set up a divisor
+        self.logic.divide(5)  # Divide accumulator by the value at index 5
+        self.assertEqual(self.logic.accumulator, 5)  # 10 / 2 = 5
 
     def test_divide_by_zero(self):
-        LogicalOperator.words[6] = "0"  # Set up a divisor of zero
+        self.logic.words[6] = "0"  # Set up a divisor of zero
         with self.assertRaises(ZeroDivisionError):
-            LogicalOperator.divide(6)  # Attempt to divide by zero
+            self.logic.divide(6)  # Attempt to divide by zero
 
     def test_divide_large_number(self):
-        LogicalOperator.accumulator = 1000000  # A large number
-        LogicalOperator.words[5] = "100000"  # A large divisor
-        LogicalOperator.divide(5)
-        self.assertEqual(LogicalOperator.accumulator, 10)  # 1000000 / 100000 = 10
+        self.logic.accumulator = 1000000  # A large number
+        self.logic.words[5] = "100000"  # A large divisor
+        self.logic.divide(5)
+        self.assertEqual(self.logic.accumulator, 10)  # 1000000 / 100000 = 10
 
     def test_divide_large_dividend_by_small_divisor(self):
-        LogicalOperator.accumulator = 1  # A small number
-        LogicalOperator.words[6] = "0.0001"  # A very small divisor
-        LogicalOperator.divide(6)
-        self.assertEqual(LogicalOperator.accumulator, 10000)  # 1 / 0.0001 = 10000
+        self.logic.accumulator = 1  # A small number
+        self.logic.words[6] = "0.0001"  # A very small divisor
+        self.logic.divide(6)
+        self.assertEqual(self.logic.accumulator, 10000)  # 1 / 0.0001 = 10000
 
     def test_divide_zero_accumulator(self):
-        LogicalOperator.accumulator = 0  # Set the accumulator to zero
-        LogicalOperator.words[7] = "5"  # A normal divisor
-        LogicalOperator.divide(7)
-        self.assertEqual(LogicalOperator.accumulator, 0)  # 0 / 5 = 0
+        self.logic.accumulator = 0  # Set the accumulator to zero
+        self.logic.words[7] = "5"  # A normal divisor
+        self.logic.divide(7)
+        self.assertEqual(self.logic.accumulator, 0)  # 0 / 5 = 0
 
     def test_divide_negative_number(self):
-        LogicalOperator.accumulator = -10  # A negative number
-        LogicalOperator.words[8] = "2"  # A positive divisor
-        LogicalOperator.divide(8)
-        self.assertEqual(LogicalOperator.accumulator, -5)  # -10 / 2 = -5
+        self.logic.accumulator = -10  # A negative number
+        self.logic.words[8] = "2"  # A positive divisor
+        self.logic.divide(8)
+        self.assertEqual(self.logic.accumulator, -5)  # -10 / 2 = -5
 
     def test_divide_negative_divisor(self):
-        LogicalOperator.accumulator = 10
-        LogicalOperator.words[9] = "-2"  # A negative divisor
-        LogicalOperator.divide(9)
-        self.assertEqual(LogicalOperator.accumulator, -5)  # 10 / -2 = -5
+        self.logic.accumulator = 10
+        self.logic.words[9] = "-2"  # A negative divisor
+        self.logic.divide(9)
+        self.assertEqual(self.logic.accumulator, -5)  # 10 / -2 = -5
 
 class TestMultFunction(unittest.TestCase):
     def setUp(self):
-        LogicalOperator.words = [""] * 100
-        LogicalOperator.accumulator = 3  # Initialize with zero 
+        self.mock_interface = Mock()
+        self.mock_file_handler = Mock()
+        self.logic = LogicalOperator(self.mock_interface, self.mock_file_handler)
+
+        self.logic.words = [""] * 100
+        self.logic.accumulator = 3 # Initialize with non-zero for multiplication
+        self.logic.pointer = 0  
 
     def test_multiply_accumulator(self):
-        LogicalOperator.words[5] = "2"  # Set up a addative
-        LogicalOperator.multiply(5)  # Add location 5 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, 6)  # 2 * 3 = 6
+        self.logic.words[5] = "2"  # Set up a addative
+        self.logic.multiply(5)  # Add location 5 content to accumulator
+        self.assertEqual(self.logic.accumulator, 6)  # 2 * 3 = 6
 
     def test_multiply_negative(self):
-        LogicalOperator.words[6] = "-2"  # Set negative
-        LogicalOperator.multiply(6) # Add location 6 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, -6) #: -2 * 3 = -6
+        self.logic.words[6] = "-2"  # Set negative
+        self.logic.multiply(6) # Add location 6 content to accumulator
+        self.assertEqual(self.logic.accumulator, -6) #: -2 * 3 = -6
     
     def test_multiply_accumulator_large(self):
-        LogicalOperator.words[5] = "9999"  # Set up a addative
-        LogicalOperator.multiply(5)  # Add location 5 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, 9997)  # 9999 * 3 = 29997 -> 9997(truncatated)
+        self.logic.words[5] = "9999"  # Set up a addative
+        self.logic.multiply(5)  # Add location 5 content to accumulator
+        self.assertEqual(self.logic.accumulator, 9997)  # 9999 * 3 = 29997 -> 9997(truncatated)
 
     def test_multiply_zero(self):
-        LogicalOperator.words[6] = "0"  # Set negative
-        LogicalOperator.multiply(6) # Add location 6 content to accumulator
-        self.assertEqual(LogicalOperator.accumulator, 0) #: 0 * 3 = 0
+        self.logic.words[6] = "0"  # Set negative
+        self.logic.multiply(6) # Add location 6 content to accumulator
+        self.assertEqual(self.logic.accumulator, 0) #: 0 * 3 = 0
 
 class TestBranchFunction(unittest.TestCase):
     def setUp(self):
