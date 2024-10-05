@@ -64,8 +64,8 @@ Steps:
 1. Parse function code ("+11" for WRITE)
 2. Extract location from the last two digits of the word
 3. Validate the memory location:
-    If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
-    If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
+   If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
+   If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
 4. Retrieve the value from the specified memory location
 5. Output the retrieved value to the console
 6. Move to the next instruction (increment the pointer)
@@ -106,8 +106,8 @@ Steps:
 1. Parse function code ("+30" for ADD)
 2. Extract location from the last two digits of the word
 3. Validate the memory location:
-    If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
-    If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
+   If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
+   If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
 4. Retrieve the value from the specified memory location
 5. Add the retrieved value to the accumulator
 6. Handle overflow by taking the result modulo 10000 or making it negative as appropriate
@@ -128,8 +128,8 @@ Steps:
 1. Parse function code ("+31" for SUBTRACT)
 2. Extract location from the last two digits of the word
 3. Validate the memory location:
-    If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
-    If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
+   If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
+   If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
 4. Retrieve the value from the specified memory location
 5. Subtract the retrieved value from the accumulator
 6. Handle underflow by taking the result modulo 10000 or making it negative as appropriate
@@ -138,7 +138,7 @@ Steps:
 Exceptions:
 
 - If an invalid memory location is provided, the system raises an IndexError with an appropriate error message
-**MULTIPLY command use case:**
+  **MULTIPLY command use case:**
 
 - Actor: The program
 - System: Memory management and accumulator
@@ -149,8 +149,8 @@ Steps:
 1. Parse function code ("+33" for MULTIPLY)
 2. Extract location from the last two digits of the word
 3. Validate the memory location:
-    If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
-    If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
+   If location is negative, raise an IndexError with message "Negative memory location: {location} is not allowed."
+   If location is out of bounds (>= len(words)), raise an IndexError with message "Memory location {location} is out of bounds."
 4. Retrieve the value from the specified memory location
 5. Multiply the accumulator by the retrieved value
 6. Handle overflow by taking the result modulo 10000 or making it negative as appropriate
@@ -233,3 +233,61 @@ Exceptions:
 4. If it is zero, set the pointer equal to the assigned value
 5. If it is not zero, simply pass to the next word
 6. Write 8 unit tests that test those use cases and other useful tests
+
+**HALT command use case:**
+
+- Actor: The program
+- System: Execution control
+- Goal: Successfully terminate the program execution
+
+Steps:
+
+1. Parse function code ("+43" for HALT)
+2. Print a message indicating that the program has been halted
+3. Terminate the program execution
+
+Exceptions:
+
+- None specific to this command
+
+**read_txt_file function use case:**
+
+- Actor: The program
+- System: File I/O and memory management
+- Goal: Successfully load a program from a text file into memory
+
+Steps:
+
+1. Prompt the user for the file location
+2. Open the specified file
+3. Read the contents of the file
+4. Split the file contents into individual words
+5. Store each word in the corresponding memory location
+6. Close the file
+
+Exceptions:
+
+- If the file cannot be opened or read, handle the appropriate file I/O exceptions
+
+**main function use case:**
+
+- Actor: The program and the user
+- System: Program execution control
+- Goal: Successfully execute a BasicML program
+
+Steps:
+
+1. Call the read_txt_file function to load the program
+2. Initialize the program counter (pointer) to 0
+3. Enter the main execution loop
+4. For each instruction:
+   a. Parse the operation code
+   b. Execute the corresponding function
+   c. Handle any exceptions that occur
+   d. Increment the program counter (unless modified by a branch instruction)
+5. Continue execution until a HALT instruction is encountered or the end of the program is reached
+
+Exceptions:
+
+- Handle any exceptions raised by individual instructions
+- Print error messages for unrecognized operation codes
