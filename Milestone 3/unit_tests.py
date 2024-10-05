@@ -12,53 +12,61 @@ class TestReadFunctions(unittest.TestCase):
         self.mock_file_handler = Mock()
         self.logic = LogicalOperator(self.mock_interface, self.mock_file_handler)
 
-        self.logic.words = [""] * 100
+        # Initialize words with valid instruction format
+        self.logic.words = ["+1000"] * 100  # Fill with READ instructions
         self.logic.accumulator = 0
         self.logic.pointer = 0
-        
+        self.logic.wait_for_input = False  # Set this to False to simulate input already provided
 
-    @patch('UVSim.input', return_value="test_input")
-    def test_read_valid_location(self, mock_input):
+    def test_read_valid_location(self):
+        self.logic.input = "test_input"
         self.logic.read(0, self.mock_interface)
         self.assertEqual(self.logic.words[0], "test_input")
 
-    @patch('UVSim.input', return_value="test_input")
-    @patch('UVSim.input', return_value="another_input")
-    def test_read_different_location(self, mock_input):
+    def test_read_different_location(self):
+        self.logic.input = "another_input"
         self.logic.read(50, self.mock_interface)
         self.assertEqual(self.logic.words[50], "another_input")
 
-    @patch('UVSim.input', return_value="")
-    def test_read_empty_input(self, mock_input):
+    def test_read_empty_input(self):
+        self.logic.input = ""
         self.logic.read(0, self.mock_interface)
         self.assertEqual(self.logic.words[0], "")
 
-    @patch('sys.stdout', new_callable=StringIO)
-    @patch('UVSim.input', return_value="test_output")
-    def test_read_output_message(self, mock_input, mock_stdout):
+    def test_read_output_message(self):
+        self.logic.input = "test_output"
         self.logic.read(25, self.mock_interface)
-        expected_output = 'Writing "test_output" to register 25.\n'
-        self.assertEqual(mock_stdout.getvalue(), expected_output)
+        self.mock_interface.add_output_text.assert_any_call("Input: test_output")
+        self.mock_interface.add_output_text.assert_any_call("Word test_output read into index 25")
 
-    @patch('UVSim.input', return_value="test_input")
-    def test_read_negative_location(self, mock_input):
+    def test_read_negative_location(self):
         with self.assertRaises(IndexError):
             self.logic.read(-1, self.mock_interface)
 
-    @patch('UVSim.input', return_value="test_input")
-    def test_read_out_of_bounds_location(self, mock_input):
+    def test_read_out_of_bounds_location(self):
         with self.assertRaises(IndexError):
             self.logic.read(100, self.mock_interface)
 
-    @patch('UVSim.input', return_value="test_input")
-    def test_read_large_valid_location(self, mock_input):
+    def test_read_large_valid_location(self):
+        self.logic.input = "test_input"
         self.logic.read(99, self.mock_interface)  # Last valid index
         self.assertEqual(self.logic.words[99], "test_input")
 
-    @patch('UVSim.input', return_value="a" * 1000)
-    def test_read_very_long_input(self, mock_input):
+    def test_read_very_long_input(self):
+        self.logic.input = "a" * 1000
         self.logic.read(0, self.mock_interface)
-        self.assertEqual(self.logic.words[0], '')
+        self.assertEqual(self.logic.words[0], "a" * 1000)
+
+    def test_read_wait_for_input(self):
+        self.logic.wait_for_input = True
+        self.logic.read(0, self.mock_interface)
+        self.mock_interface.add_output_text.assert_called_with("What would you like to write to register 0? ")
+        self.assertFalse(self.logic.wait_for_input)
+
+    def tearDown(self):
+        # Reset the LogicalOperator state after each test
+        self.logic.pointer = 0
+        self.logic.wait_for_input = False
 
 class TestWriteFunction(unittest.TestCase):
     def setUp(self):
