@@ -7,6 +7,7 @@ from UVSim_FileHandler import FileHandler
 class Interface:
     def __init__(self):
         self.file_handler = FileHandler()
+        self.file_loaded = False
 
     def open_file(self):
         '''Open a file for editing.'''
@@ -14,17 +15,23 @@ class Interface:
             filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
         )
         if not file_path:
+            self.disable_user_input()
             return
+
+        self.file_loaded = True
 
         logic.load_file(file_path)
         self.set_output_text("")
         self.add_output_text(f"File loaded: {file_path}")
-        self.add_output_text("Program loaded into memory.")
+        self.add_output_text("Program loaded into memory. Click 'Run File' to run the program.")
 
         root.title(f"UVSim - {file_path}")
 
     def run_file(self):
         '''Runs the loaded program.'''
+        if not self.file_loaded:
+            self.add_output_text("File not loaded, open a file to run commands.")
+            return
         logic.reset_to_default()
         logic.run_command()
 
@@ -45,6 +52,20 @@ class Interface:
     def show_frame(self, frame):
         ''' Raise the selected frame to switch screens '''
         frame.tkraise()
+
+    def enable_user_input(self):
+        self.file_loaded = True
+        txt_edit.config(state="normal")
+        txt_edit.delete(0, tk.END)
+        btn_submit.config(state="normal")
+
+    def disable_user_input(self):
+        self.file_loaded = False
+        txt_edit.delete(0, tk.END)
+        txt_edit.insert(0, "Run a file with user input to enable text editing.")
+        txt_edit.config(state="disabled")
+        btn_submit.config(state="disabled")
+
 
 interface = Interface()
 logic = LogicalOperator(interface, interface.file_handler)
@@ -87,18 +108,25 @@ btn_run = tk.Button(frm_buttons, text="Run File", command=interface.run_file, wi
 btn_run.grid(row=2, column=0, padx=5, pady=5)
 
 # Right Column
-output_text = tk.Label(main_screen, text="Output will appear here", justify="left")
+output_text = tk.Label(main_screen, text="Output will appear here\n", justify="left")
 output_text.grid(row=0, column=1, sticky="nw")
 
-instruct = tk.Label(main_screen, text="Enter your input: ", justify="left", height=1)
-instruct.grid(row=0, column=1, sticky="sw")
+### Input frame to hold label, input and submit button
+input_frame = tk.Frame(main_screen)
+input_frame.grid(row=0, column=1, sticky="swe", padx=100, pady=20)
+input_frame.grid_columnconfigure(1, weight=1)
 
-txt_edit = tk.Entry(main_screen)
-txt_edit.grid(row=0, column=1, sticky="swe", padx=100)
-txt_edit.bind('<Return>', interface.save_input)  # Process input on "Enter"
+instruct = tk.Label(input_frame, text="Enter your input: ", justify="left", height=1)
+instruct.grid(row=0, column=0, sticky="sw")
 
-spacer = tk.Label(main_screen, text="", justify="left", height=1)
-spacer.grid(row=1, column=1, sticky="s")
+txt_edit = tk.Entry(input_frame)
+txt_edit.insert(0, "Run a file with user input to enable text editing.")
+txt_edit.grid(row=0, column=1, sticky="we", padx=(0, 5))
+txt_edit.bind('<Return>', interface.save_input)
+txt_edit.config(state="disabled")
+
+btn_submit = tk.Button(input_frame, text="Submit", command=lambda: interface.save_input(None), state="disabled")
+btn_submit.grid(row=0, column=2, sticky="e")
 
 # Button to navigate to the Edit screen
 settings_text = tk.Label(frm_buttons, text="Settings/Edit", justify="left")

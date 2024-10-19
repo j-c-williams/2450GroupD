@@ -28,6 +28,9 @@ class LogicalOperator:
             interface.add_output_text(f"What would you like to write to register {location}? ")
             # Ready to read again and get input
             self.wait_for_input = False
+            
+            self.interface.enable_user_input()
+
         else:
             # used stored input
             interface.add_output_text(f"Input: {self.input}")
@@ -35,6 +38,8 @@ class LogicalOperator:
             interface.add_output_text(f"Word {self.input} read into index {location}")
             self.input = ""
             self.wait_for_input = True
+
+            self.interface.disable_user_input()
 
             # Conditionally go to the next command
             self.pointer += 1
