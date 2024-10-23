@@ -1,16 +1,19 @@
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
+from tkinter import messagebox
+from tkinter import filedialog
 from UVSim import LogicalOperator
 from UVSim_FileHandler import FileHandler
-
+import re
 
 class Interface:
     def __init__(self):
         self.file_handler = FileHandler()
         self.file_loaded = False
+        self.edit_filepath = ""
 
     def open_file(self):
-        '''Open a file for editing.'''
+        '''Open a file on the main screen to run.'''
         file_path = askopenfilename(
             filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
         )
@@ -66,6 +69,91 @@ class Interface:
         txt_edit.config(state="disabled")
         btn_submit.config(state="disabled")
 
+    def open_file_edit(self):
+        '''Open a file on the edit screen to edit.'''
+        file_path = askopenfilename(
+            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+        )
+        if file_path:
+            self.edit_filepath = file_path
+
+            with open(file_path, 'r') as file:
+                file_contents = file.read()
+
+            file_edit.config(state="normal")
+            file_edit.delete('1.0', tk.END)
+            
+            file_edit.insert(tk.END, file_contents)
+            file_edit.config(state="disabled")
+
+            btn_edit_save.config(state="normal")
+            file_edit.config(state="normal")
+            btn_edit_save_as.config(state="normal")
+        else:
+            btn_edit_save.config(state="disabled")
+            file_edit.config(state="disabled")
+            btn_edit_save_as.config(state="disabled")
+    
+    def save_as_file_edit(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"),("All files", "*.*")])
+        if not file_path:
+            print("Invalid file_path in save_as")
+            return
+        if not self.validate_valid_edits():
+            print("edit failed validation in save_as")
+            return
+
+        file_contents = file_edit.get('1.0', tk.END)
+
+        with open(file_path, 'w') as file:
+            file.write(file_contents)
+
+        print(f"File saved at: {file_path}")
+        messagebox.showinfo("Save As - Success", "File saved successfully!")
+    
+    def save_file_edit(self):
+        if not self.edit_filepath:
+            print("Invalid file_path in save_as")
+            return
+        if not self.validate_valid_edits():
+            print("edit failed validation in save_as")
+            return
+
+        file_contents = file_edit.get('1.0', tk.END)
+
+        with open(self.edit_filepath, 'w') as file:
+            file.write(file_contents)
+
+        print(f"File saved at: {self.edit_filepath}")
+        messagebox.showinfo("Save As - Success", "File saved successfully!")
+
+    def validate_valid_edits(self):
+        file_contents = file_edit.get('1.0', tk.END)
+        file_contents_list = file_contents.split("\n")
+        print(file_contents_list)
+        if len(file_contents_list) > 100:
+            print("too many words, invalid")
+            messagebox.showinfo("Save - Error", "Edited file is invalid, you may only have 100 registers.")
+            return
+        for word in file_contents_list:
+            pattern = r"^[+-]\d{4}$"
+    
+            # check if the string follows the pattern, and has text otherwise its just extra newlines
+            if not re.match(pattern, word) and word:
+                print(f"\"{word}\" failed to validate")
+                messagebox.showinfo("Save - Error", "Edited file is invalid, each line must be a 4 digit signed integer.")
+                return False
+                
+        return True
+    
+    def limit_lines(self):
+        # Get number of lines
+        total_lines = int(file_edit.index('end-1c').split('.')[0])  # Line count
+        
+        # If its over the limit of 100 lines (words), delete the last one
+        if total_lines > 100:
+            messagebox.showwarning("Warning", "Maximum of 100 lines allowed.")
+            file_edit.delete('100.0', tk.END)
 
 interface = Interface()
 logic = LogicalOperator(interface, interface.file_handler)
@@ -140,13 +228,37 @@ btn_color_screen.grid(row=5, column=0, padx=5, pady=5)
 
 # ----- Edit Screen Layout -----
 edit_screen = tk.Frame(container)
-edit_screen.grid(row=0, column=0, sticky="nsew")
+edit_screen.grid(row=0, column=0, sticky="nesw")
 
-edit_label = tk.Label(edit_screen, text="Edit Screen", font=("Arial", 18))
+left_col = tk.Frame(edit_screen)
+left_col.grid(row=0, column=0, sticky="w", padx=30, pady=10)
+
+right_col = tk.Frame(edit_screen)
+right_col.grid(row=0, column=1, sticky="ne", padx=30, pady=10)
+
+edit_label = tk.Label(right_col, text="Edit File", font=("Arial", 18))
+edit_label.grid(row=0, column=0)
 edit_label.pack(pady=50)
 
-btn_main_screen = tk.Button(edit_screen, text="Back to Main Screen", command=lambda: interface.show_frame(main_screen))
-btn_main_screen.pack()
+file_edit = tk.Text(right_col, width=100, height=20)
+file_edit.insert("1.0", "Open a file to edit it.")
+file_edit.config(state="disabled")
+file_edit.pack(pady=10)
+file_edit.bind("<KeyRelease>", interface.limit_lines)
+
+btn_edit_file = tk.Button(left_col, text="Open File", command=lambda: interface.open_file_edit(), width=20, padx=30)
+btn_edit_file.pack(pady=10)
+
+btn_edit_save = tk.Button(left_col, text="Save File", command=lambda: interface.save_file_edit(), width=20, padx=30)
+btn_edit_save.pack(pady=10)
+btn_edit_save.config(state="disabled")
+
+btn_edit_save_as = tk.Button(left_col, text="Save As", command=lambda: interface.save_as_file_edit(), width=20, padx=30)
+btn_edit_save_as.pack(pady=10)
+btn_edit_save_as.config(state="disabled")
+
+btn_main_screen = tk.Button(left_col, text="Back to Main Screen", command=lambda: interface.show_frame(main_screen), width=20, padx=30)
+btn_main_screen.pack(pady=10)
 
 # ----- Color Screen Layout -----
 color_screen = tk.Frame(container)
