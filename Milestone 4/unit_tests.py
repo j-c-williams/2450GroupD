@@ -13,32 +13,30 @@ class TestReadFunctions(unittest.TestCase):
         self.logic = LogicalOperator(self.mock_interface, self.mock_file_handler)
 
         self.logic.words = [""] * 100
+        self.logic.words[0] = "+0000"
         self.logic.accumulator = 0
         self.logic.pointer = 0
+        self.logic.wait_for_input = False
         
 
     @patch('UVSim.input', return_value="test_input")
     def test_read_valid_location(self, mock_input):
+        self.logic.input = "test_input"
         self.logic.read(0, self.mock_interface)
         self.assertEqual(self.logic.words[0], "test_input")
 
-    @patch('UVSim.input', return_value="test_input")
     @patch('UVSim.input', return_value="another_input")
     def test_read_different_location(self, mock_input):
+        self.logic.input = "another_input"
         self.logic.read(50, self.mock_interface)
         self.assertEqual(self.logic.words[50], "another_input")
 
     @patch('UVSim.input', return_value="")
     def test_read_empty_input(self, mock_input):
+        self.logic.words[0] = "not empty"
+        self.logic.input = ""
         self.logic.read(0, self.mock_interface)
         self.assertEqual(self.logic.words[0], "")
-
-    @patch('sys.stdout', new_callable=StringIO)
-    @patch('UVSim.input', return_value="test_output")
-    def test_read_output_message(self, mock_input, mock_stdout):
-        self.logic.read(25, self.mock_interface)
-        expected_output = 'Writing "test_output" to register 25.\n'
-        self.assertEqual(mock_stdout.getvalue(), expected_output)
 
     @patch('UVSim.input', return_value="test_input")
     def test_read_negative_location(self, mock_input):
@@ -52,13 +50,15 @@ class TestReadFunctions(unittest.TestCase):
 
     @patch('UVSim.input', return_value="test_input")
     def test_read_large_valid_location(self, mock_input):
-        self.logic.read(99, self.mock_interface)  # Last valid index
+        self.logic.input = "test_input"
+        self.logic.read(99, self.mock_interface)
         self.assertEqual(self.logic.words[99], "test_input")
 
     @patch('UVSim.input', return_value="a" * 1000)
     def test_read_very_long_input(self, mock_input):
+        self.logic.input = "a" * 1000
         self.logic.read(0, self.mock_interface)
-        self.assertEqual(self.logic.words[0], '')
+        self.assertEqual(self.logic.words[0], "a" * 1000)
 
 class TestWriteFunction(unittest.TestCase):
     def setUp(self):

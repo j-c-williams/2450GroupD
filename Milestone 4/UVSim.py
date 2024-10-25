@@ -21,7 +21,7 @@ class LogicalOperator:
         return self.words[location] if self.words[location] is not None else ""
 
     def read(self, location, interface):
-        if location < 0 or location >= len(self.words):
+        if location < 0 or location > 99:
             raise IndexError(f"Invalid memory location: {location}")
 
         if self.wait_for_input:
@@ -43,7 +43,7 @@ class LogicalOperator:
 
             # Conditionally go to the next command
             self.pointer += 1
-            self.run_command()
+            
 
     def handle_input(self, user_input):
         if len(user_input) == 0:
@@ -152,9 +152,8 @@ class LogicalOperator:
             match operation:
                 case "+10":
                     self.read(location, self.interface)
-                    # Repeat executing the read line over and over until input is handled and ready to accept.
-                        # self.pointer += 1
-                        # self.run_command()
+                    if self.wait_for_input:
+                        self.run_command()
                 case "+11":
                     self.write(location)
                     self.pointer += 1
