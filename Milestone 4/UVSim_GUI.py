@@ -6,6 +6,14 @@ from UVSim import LogicalOperator
 from UVSim_FileHandler import FileHandler
 import re
 
+# Color scheme variables
+primary_color = "#4C721D"  # Green
+secondary_color = "#FFFFFF"  # White
+text_color_on_primary = secondary_color
+text_color_on_secondary = primary_color
+primary_button_hover_color = "#5d8b24"
+secondary_button_hover_color = "#F5F5F5"
+
 class Interface:
     def __init__(self):
         self.file_handler = FileHandler()
@@ -162,19 +170,20 @@ logic = LogicalOperator(interface, interface.file_handler)
 root = tk.Tk()
 root.title("UVSim GUI")
 root.geometry("1200x700")
+root.configure(bg=primary_color)
 
 root.rowconfigure(0, weight=1)
 root.columnconfigure(0, weight=1)
 
 # Create a container to stack all screens
-container = tk.Frame(root)
+container = tk.Frame(root, bg=primary_color)
 container.pack(fill="both", expand=True)
 
 container.grid_rowconfigure(0, weight=1)
 container.grid_columnconfigure(0, weight=1)
 
 # Main screen Frame
-main_screen = tk.Frame(container)
+main_screen = tk.Frame(container, bg=primary_color)
 main_screen.grid(row=0, column=0, sticky="nsew")
 
 main_screen.grid_rowconfigure(0, weight=1)
@@ -183,91 +192,140 @@ main_screen.grid_columnconfigure(1, weight=10)
 
 # ----- Main Screen Layout -----
 # Left Column
-frm_buttons = tk.Frame(main_screen, relief=tk.RAISED, bd=2, width=900)
+frm_buttons = tk.Frame(main_screen, relief=tk.RAISED, bd=2, width=900, bg=secondary_color)
 frm_buttons.grid(row=0, column=0, sticky="ns")
 
-buttons_text = tk.Label(frm_buttons, text="Run/Open", justify="left")
+buttons_text = tk.Label(frm_buttons, text="Run/Open", justify="left", 
+                       bg=secondary_color, fg=text_color_on_secondary)
 buttons_text.grid(row=0, column=0, sticky="w", pady=5)
 
+def on_button_hover(event):
+    if event.widget.cget('bg') == primary_color:
+        event.widget.configure(bg=primary_button_hover_color)
+    else:
+        event.widget.configure(bg=secondary_button_hover_color)
+
+def on_button_leave(event):
+    if event.widget.cget('bg') == primary_button_hover_color:
+        event.widget.configure(bg=primary_color)
+    else:
+        event.widget.configure(bg=secondary_color)
+
+def style_button(button, is_primary=True):
+    button.configure(
+        bg=primary_color if is_primary else secondary_color,
+        fg=text_color_on_primary if is_primary else text_color_on_secondary,
+        activebackground=primary_button_hover_color if is_primary else secondary_button_hover_color,
+        activeforeground=text_color_on_primary if is_primary else text_color_on_secondary,
+        bd=0,
+        relief="flat"
+    )
+    button.bind("<Enter>", on_button_hover)
+    button.bind("<Leave>", on_button_leave)
+
 btn_open = tk.Button(frm_buttons, text="Open File", command=interface.open_file, width=12)
+style_button(btn_open)
 btn_open.grid(row=1, column=0, sticky="ew", padx=5, pady=5)
 
 btn_run = tk.Button(frm_buttons, text="Run File", command=interface.run_file, width=12)
+style_button(btn_run)
 btn_run.grid(row=2, column=0, padx=5, pady=5)
 
 # Right Column
-output_text = tk.Label(main_screen, text="Output will appear here\n", justify="left")
+output_text = tk.Label(main_screen, text="Output will appear here\n", justify="left",
+                      bg=primary_color, fg=text_color_on_primary)
 output_text.grid(row=0, column=1, sticky="nw")
 
-### Input frame to hold label, input and submit button
-input_frame = tk.Frame(main_screen)
+# Input frame
+input_frame = tk.Frame(main_screen, bg=primary_color)
 input_frame.grid(row=0, column=1, sticky="swe", padx=100, pady=20)
 input_frame.grid_columnconfigure(1, weight=1)
 
-instruct = tk.Label(input_frame, text="Enter your input: ", justify="left", height=1)
+instruct = tk.Label(input_frame, text="Enter your input: ", justify="left", height=1,
+                   bg=primary_color, fg=text_color_on_primary)
 instruct.grid(row=0, column=0, sticky="sw")
 
-txt_edit = tk.Entry(input_frame)
+txt_edit = tk.Entry(input_frame, bg=primary_color, fg=text_color_on_primary)
 txt_edit.insert(0, "Run a file with user input to enable text editing.")
 txt_edit.grid(row=0, column=1, sticky="we", padx=(0, 5))
 txt_edit.bind('<Return>', interface.save_input)
 txt_edit.config(state="disabled")
 
-btn_submit = tk.Button(input_frame, text="Submit", command=lambda: interface.save_input(None), state="disabled")
+btn_submit = tk.Button(input_frame, text="Submit", command=lambda: interface.save_input(None))
+style_button(btn_submit, is_primary=False)
 btn_submit.grid(row=0, column=2, sticky="e")
+btn_submit.config(state="disabled")
 
-# Button to navigate to the Edit screen
-settings_text = tk.Label(frm_buttons, text="Settings/Edit", justify="left")
+# Settings section
+settings_text = tk.Label(frm_buttons, text="Settings/Edit", justify="left",
+                        bg=secondary_color, fg=text_color_on_secondary)
 settings_text.grid(row=3, column=0, sticky="w", pady=(50,5))
 
-btn_edit_screen = tk.Button(frm_buttons, text="Edit File", command=lambda: interface.show_frame(edit_screen), width=12)
+btn_edit_screen = tk.Button(frm_buttons, text="Edit File", 
+                           command=lambda: interface.show_frame(edit_screen), width=12)
+style_button(btn_edit_screen)
 btn_edit_screen.grid(row=4, column=0, padx=5, pady=5)
 
-btn_color_screen = tk.Button(frm_buttons, text="Edit Colors", command=lambda: interface.show_frame(color_screen), width=12)
+btn_color_screen = tk.Button(frm_buttons, text="Edit Colors",
+                            command=lambda: interface.show_frame(color_screen), width=12)
+style_button(btn_color_screen)
 btn_color_screen.grid(row=5, column=0, padx=5, pady=5)
 
 # ----- Edit Screen Layout -----
-edit_screen = tk.Frame(container)
+edit_screen = tk.Frame(container, bg=primary_color)
 edit_screen.grid(row=0, column=0, sticky="nesw")
 
-left_col = tk.Frame(edit_screen)
+left_col = tk.Frame(edit_screen, bg=secondary_color)
 left_col.grid(row=0, column=0, sticky="w", padx=30, pady=10)
 
-right_col = tk.Frame(edit_screen)
+right_col = tk.Frame(edit_screen, bg=primary_color)
 right_col.grid(row=0, column=1, sticky="ne", padx=30, pady=10)
 
-edit_label = tk.Label(right_col, text="Edit File", font=("Arial", 18))
-edit_label.grid(row=0, column=0)
+edit_label = tk.Label(right_col, text="Edit File", font=("Arial", 18),
+                     bg=primary_color, fg=text_color_on_primary)
 edit_label.pack(pady=50)
 
-file_edit = tk.Text(right_col, width=100, height=20)
+file_edit = tk.Text(right_col, width=100, height=20, bg=primary_color, 
+                   fg=text_color_on_primary)
 file_edit.insert("1.0", "Open a file to edit it.")
 file_edit.config(state="disabled")
 file_edit.pack(pady=10)
 file_edit.bind("<KeyRelease>", interface.limit_lines)
 
-btn_edit_file = tk.Button(left_col, text="Open File", command=lambda: interface.open_file_edit(), width=20, padx=30)
+# Style edit screen buttons
+btn_edit_file = tk.Button(left_col, text="Open File", 
+                         command=lambda: interface.open_file_edit(), width=20)
+style_button(btn_edit_file, is_primary=False)
 btn_edit_file.pack(pady=10)
 
-btn_edit_save = tk.Button(left_col, text="Save File", command=lambda: interface.save_file_edit(), width=20, padx=30)
+btn_edit_save = tk.Button(left_col, text="Save File",
+                         command=lambda: interface.save_file_edit(), width=20)
+style_button(btn_edit_save, is_primary=False)
 btn_edit_save.pack(pady=10)
 btn_edit_save.config(state="disabled")
 
-btn_edit_save_as = tk.Button(left_col, text="Save As", command=lambda: interface.save_as_file_edit(), width=20, padx=30)
+btn_edit_save_as = tk.Button(left_col, text="Save As",
+                            command=lambda: interface.save_as_file_edit(), width=20)
+style_button(btn_edit_save_as, is_primary=False)
 btn_edit_save_as.pack(pady=10)
 btn_edit_save_as.config(state="disabled")
 
-btn_main_screen = tk.Button(left_col, text="Back to Main Screen", command=lambda: interface.show_frame(main_screen), width=20, padx=30)
+btn_main_screen = tk.Button(left_col, text="Back to Main Screen",
+                           command=lambda: interface.show_frame(main_screen), width=20)
+style_button(btn_main_screen, is_primary=False)
 btn_main_screen.pack(pady=10)
 
 # ----- Color Screen Layout -----
-color_screen = tk.Frame(container)
+color_screen = tk.Frame(container, bg=primary_color)
 color_screen.grid(row=0, column=0, sticky="nsew")
 
-color_label = tk.Label(color_screen, text="Edit Colors", font=("Arial", 18))
+color_label = tk.Label(color_screen, text="Edit Colors", font=("Arial", 18),
+                      bg=primary_color, fg=text_color_on_primary)
 color_label.pack(pady=50)
 
-btn_main_screen = tk.Button(color_screen, text="Back to Main Screen", command=lambda: interface.show_frame(main_screen))
+btn_main_screen = tk.Button(color_screen, text="Back to Main Screen",
+                           command=lambda: interface.show_frame(main_screen))
+style_button(btn_main_screen)
 btn_main_screen.pack()
 
 interface.show_frame(main_screen)
