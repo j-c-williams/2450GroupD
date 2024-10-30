@@ -59,6 +59,12 @@ def style_button(button, is_primary=True):
     button.bind("<Enter>", on_button_hover)
     button.bind("<Leave>", on_button_leave)
 
+
+def show_frame(frame):
+    ''' Raise the selected frame to switch screens '''
+    frame.tkraise()
+
+
 # Root setup
 root = tk.Tk()
 root.title("UVSim GUI")
@@ -69,12 +75,20 @@ class Interface:
         self.file_handler = FileHandler()
         self.file_loaded = False
         self.edit_filepath = ""
+        self.accepting_input = False
 
         self.primary_color = tk.StringVar(value=colors['primary_color'])
         self.secondary_color = tk.StringVar(value=colors['secondary_color'])
         self.text_color_on_primary = tk.StringVar(value=colors['text_color_on_primary'])
-        self.text_color_on_secondary = tk.StringVar(value=colors['text_color_on_secondary'])
+        self.text_color_on_secondary = tk.StringVar(value=colors['text_color_on_secondary'])    
 
+        # previously a magic number, update when we change number of lines logic
+        # found in validate_valid_edits() and limit_lines()
+        self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE = 100
+
+        # previously a magic pattern, update when we change words logic
+        # found in validate_valid_edits()
+        self.ACCEPTABLE_WORD_PATTERN = r"^[+-]\d{4}$"
 
     def open_file(self):
         '''Open a file on the main screen to run.'''
@@ -112,22 +126,24 @@ class Interface:
 
     def save_input(self, _event):
         user_input = txt_edit.get()
+        if user_input == "":
+            # only accept if there is an input
+            return
+        if not self.accepting_input:
+            # only run if the program is waiting for input
+            return
         print(f"User input: {user_input}")
         logic.handle_input(user_input)
         txt_edit.delete(0, tk.END)
-    
-    def show_frame(self, frame):
-        ''' Raise the selected frame to switch screens '''
-        frame.tkraise()
 
     def enable_user_input(self):
-        self.file_loaded = True
+        self.accepting_input = True
         txt_edit.config(state="normal")
         txt_edit.delete(0, tk.END)
         btn_submit.config(state="normal")
 
     def disable_user_input(self):
-        self.file_loaded = False
+        self.accepting_input = False
         txt_edit.delete(0, tk.END)
         txt_edit.insert(0, "Run a file with user input to enable text editing.")
         txt_edit.config(state="disabled")
@@ -150,13 +166,9 @@ class Interface:
             file_edit.insert(tk.END, file_contents)
             file_edit.config(state="disabled")
 
-            btn_edit_save.config(state="normal")
-            file_edit.config(state="normal")
-            btn_edit_save_as.config(state="normal")
+            self.enable_user_input()
         else:
-            btn_edit_save.config(state="disabled")
-            file_edit.config(state="disabled")
-            btn_edit_save_as.config(state="disabled")
+            self.disable_user_input()
     
     def save_as_file_edit(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"),("All files", "*.*")])
@@ -195,12 +207,12 @@ class Interface:
         file_contents = file_edit.get('1.0', tk.END)
         file_contents_list = file_contents.split("\n")
         print(file_contents_list)
-        if len(file_contents_list) > 100:
+        if len(file_contents_list) > self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE:
             print("too many words, invalid")
-            messagebox.showinfo("Save - Error", "Edited file is invalid, you may only have 100 registers.")
+            messagebox.showinfo("Save - Error", "Edited file is invalid, you may only have ",self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE, " registers.")
             return
         for word in file_contents_list:
-            pattern = r"^[+-]\d{4}$"
+            pattern = self.ACCEPTABLE_WORD_PATTERN
     
             # check if the string follows the pattern, and has text otherwise its just extra newlines
             if not re.match(pattern, word) and word:
@@ -216,8 +228,8 @@ class Interface:
         
         # If its over the limit of 100 lines (words), delete the last one
         if total_lines > 100:
-            messagebox.showwarning("Warning", "Maximum of 100 lines allowed.")
-            file_edit.delete('100.0', tk.END)
+            messagebox.showwarning("Warning", "Maximum of ",self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE, " lines allowed.")
+            file_edit.delete(str(self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE), tk.END)
     
     def update_colors(self):
         """Update all widgets with new colors"""
@@ -424,12 +436,12 @@ settings_text.configure(
 settings_text.grid(row=3, column=0, sticky="w", pady=(50,5))
 
 btn_edit_screen = tk.Button(frm_buttons, text="Edit File", 
-                           command=lambda: interface.show_frame(edit_screen), width=12)
+                           command=lambda: show_frame(edit_screen), width=12)
 style_button(btn_edit_screen, True)
 btn_edit_screen.grid(row=4, column=0, padx=5, pady=5)
 
 btn_color_screen = tk.Button(frm_buttons, text="Edit Colors",
-                            command=lambda: interface.show_frame(color_screen), width=12)
+                            command=lambda: show_frame(color_screen), width=12)
 style_button(btn_color_screen, True)
 btn_color_screen.grid(row=5, column=0, padx=5, pady=5)
 
@@ -480,7 +492,7 @@ btn_edit_save_as.pack(pady=10)
 btn_edit_save_as.config(state="disabled")
 
 btn_edit_main_screen = tk.Button(left_col, text="Back to Main Screen",
-                           command=lambda: interface.show_frame(main_screen), width=20)
+                           command=lambda: show_frame(main_screen), width=20)
 style_button(btn_edit_main_screen, False)
 btn_edit_main_screen.pack(pady=10)
 
@@ -546,11 +558,11 @@ btn_reset.pack(pady=10)
 
 # Back button
 btn_main_screen = tk.Button(controls_frame, text="Back to Main Screen",
-                           command=lambda: interface.show_frame(main_screen))
+                           command=lambda: show_frame(main_screen))
 style_button(btn_main_screen, False)
 btn_main_screen.pack(pady=10)
 
-interface.show_frame(main_screen)
+show_frame(main_screen)
 
 # Start the GUI loop
 root.mainloop()
