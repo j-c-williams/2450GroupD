@@ -1,27 +1,35 @@
-Attendees: Kyler, Jackson
+Attendees: Kyler, Jackson, Michael
 
 ## Agenda Items:
 
 Review the next milestone requirements
 
-- Add changes based on Milestone 3 feedback
-- Add screen to the UI to change colors of the app
-- Add screen to the UI to edit and save text files for running
+- Main Logic change to support 250 words and 6 letter words
+- Get rid of hardcoding and magic numbers to more easily change this
+
+- Add tabs to the GUI so that multiple programs can be switched between/changed functionality
 
 Added action items to Kanban board
 
 ## Action items
 
+(Goal: finish these in 1-2 weeks so we have time on the end to test and refine before turning in)
+
 TODO Assigned:
 Kyler:
 
-- Create wireframe for the GUI (didn't do it last milestone)
-- Generally do the file load/edit feature
+- Add tabs to the GUI (bullet point 3)
+- General GUI refinement and organization
 
 Jackson
 
-- Generally do the UI color changing feature
+- Change logic to UVSim.py to add 6-digit functionality (bullet point 1)
 
 Michael:
 
-- Generally update design doc files and fix things from last milestone
+- Change logic to get rid of hard-coded values (4 digit words and 100 word files) to use centralized variables to easily change them
+- Create one-way conversion from 4 digit words to 6 for use during its run (Bullet point 2)
+
+Jackson/Michael
+
+- Combine new logic and 6-digit functionality
