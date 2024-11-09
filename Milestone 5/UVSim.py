@@ -60,7 +60,7 @@ class LogicalOperator:
             if not self.wait_for_input:
                 self.run_command()
         else:
-            self.interface.add_output_text("Input out of range, tray again.")
+            self.interface.add_output_text("Input out of range, try again.")
             return
 
     def check_int(self, s):
@@ -149,8 +149,8 @@ class LogicalOperator:
         if word.strip() == "":
             self.pointer += 1
 
-        operation = word[:3]  # Grab only the first 3 characters (operation code)
-        location = int(word[3:])   # Grab the last 2 characters for the location
+        operation = word[:4]  # Grab only the first 3 characters (operation code)
+        location = int(word[4:])   # Grab the last 2 characters for the location
 
         try:
             match operation:
