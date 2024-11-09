@@ -7,6 +7,10 @@ class LogicalOperator:
         self.interface = interface
         self.input = ""
         self.wait_for_input = True
+        self.WORD_LENGTH = 6
+        self.MAX_ADDRESSES = 249
+        self.MAX_INPUT = 100000
+        self.MIN_INPUT = -1000000
     
     def load_file(self, file_path):
         #Uses the FileHandler to load a file.
@@ -21,7 +25,7 @@ class LogicalOperator:
         return self.words[location] if self.words[location] is not None else ""
 
     def read(self, location, interface):
-        if location < 0 or location > 99:
+        if location < 0 or location > self.MAX_ADDRESSES:
             raise IndexError(f"Invalid memory location: {location}")
 
         if self.wait_for_input:
@@ -51,7 +55,7 @@ class LogicalOperator:
         if not self.check_int(user_input):
             self.interface.add_output_text("Input is invalid, try again.")
             return
-        if int(user_input) > -10_000 and int(user_input) < 10_000:
+        if int(user_input) > self.MIN_INPUT and int(user_input) < self.MAX_INPUT:
             self.input = user_input
             if not self.wait_for_input:
                 self.run_command()
@@ -66,7 +70,7 @@ class LogicalOperator:
 
 
     def load(self, location):
-        if location < 0 or location > 99:
+        if location < 0 or location > self.MAX_ADDRESSES:
             raise IndexError("Load attempted to load value out of bounds")
          
         data = self.words[location]
@@ -85,20 +89,20 @@ class LogicalOperator:
     def add(self, location):
         
         if (int(self.accumulator) + int(self.words[location])) > 0:
-            self.accumulator = (int(self.accumulator) + int(self.words[location])) % 10000
-        else: self.accumulator = -(abs(int(self.accumulator) + int(self.words[location]))%10000)
+            self.accumulator = (int(self.accumulator) + int(self.words[location])) % self.MAX_INPUT
+        else: self.accumulator = -(abs(int(self.accumulator) + int(self.words[location]))%self.MAX_INPUT)
         
     def subtract(self, location):
         
         if (int(self.accumulator) - int(self.words[location])) > 0:
-            self.accumulator = (int(self.accumulator) - int(self.words[location])) % 10000
-        else: self.accumulator = -(abs(int(self.accumulator) - int(self.words[location]))%10000)
+            self.accumulator = (int(self.accumulator) - int(self.words[location])) % self.MAX_INPUT
+        else: self.accumulator = -(abs(int(self.accumulator) - int(self.words[location]))%self.MAX_INPUT)
 
     def multiply(self, location):
         
         if (int(self.accumulator) * int(self.words[location])) > 0:
-            self.accumulator = (int(self.accumulator) * int(self.words[location])) % 10000
-        else: self.accumulator = -(abs(int(self.accumulator) * int(self.words[location]))%10000)
+            self.accumulator = (int(self.accumulator) * int(self.words[location])) % self.MAX_INPUT
+        else: self.accumulator = -(abs(int(self.accumulator) * int(self.words[location]))%self.MAX_INPUT)
 
     def divide(self, location):
         
@@ -108,13 +112,13 @@ class LogicalOperator:
         self.accumulator = float(self.accumulator) / divisor 
 
     def branch(self, location):
-        if location < 0 or location > 99:
+        if location < 0 or location > self.MAX_ADDRESSES:
             raise IndexError("Branch attempted to set pointer out of bounds")
         
         self.pointer = location
 
     def branch_neg(self, location):
-        if location < 0 or location > 99:
+        if location < 0 or location > self.MAX_ADDRESSES:
             raise IndexError("Branch_neg attempted to set pointer out of bounds")
         
         self.accumulator = int(self.accumulator)
@@ -124,7 +128,7 @@ class LogicalOperator:
             self.pointer += 1
 
     def branch_zero(self, location):
-        if location < 0 or location > 99:
+        if location < 0 or location > self.MAX_ADDRESSES:
             raise IndexError("Branchzero attempted to set pointer out of bounds")
         self.accumulator = int(self.accumulator)
         if self.accumulator == 0:
@@ -150,48 +154,48 @@ class LogicalOperator:
 
         try:
             match operation:
-                case "+10":
+                case "+010":
                     self.read(location, self.interface)
                     if self.wait_for_input:
                         self.run_command()
-                case "+11":
+                case "+011":
                     self.write(location)
                     self.pointer += 1
                     self.run_command()
-                case "+20":
+                case "+020":
                     self.load(location)
                     self.pointer += 1
                     self.run_command()
-                case "+21":
+                case "+021":
                     self.store(location)
                     self.pointer += 1
                     self.run_command()
-                case "+30":
+                case "+030":
                     self.add(location)
                     self.pointer += 1
                     self.run_command()
-                case "+31":
+                case "+031":
                     self.subtract(location)
                     self.pointer += 1
                     self.run_command()
-                case "+32":
+                case "+032":
                     self.divide(location)
                     self.pointer += 1
                     self.run_command()
-                case "+33":
+                case "+033":
                     self.multiply(location)
                     self.pointer += 1
                     self.run_command()
-                case "+40":
+                case "+040":
                     self.branch(location)
                     self.run_command()
-                case "+41":
+                case "+041":
                     self.branch_neg(location)
                     self.run_command()
-                case "+42":
+                case "+042":
                     self.branch_zero(location)
                     self.run_command()
-                case "+43":
+                case "+043":
                     self.interface.add_output_text("Program is halted.\n")
                     print("The program has been halted.")
                 case _:
