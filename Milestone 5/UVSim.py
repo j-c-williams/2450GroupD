@@ -14,7 +14,12 @@ class LogicalOperator:
     
     def load_file(self, file_path):
         #Uses the FileHandler to load a file.
-        self.words = self.file_handler.read_txt_file(file_path)
+        self.words, was_converted = self.file_handler.read_txt_file(file_path)
+        self.interface.add_output_text('test')
+        if was_converted:
+            return True
+        else:
+            return False
 
     def write(self, location):
         if location < 0:

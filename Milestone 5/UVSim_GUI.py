@@ -100,10 +100,15 @@ class Interface:
 
         self.file_loaded = True
 
-        logic.load_file(file_path)
-        self.set_output_text("")
-        self.add_output_text(f"File loaded: {file_path}")
-        self.add_output_text("Program loaded into memory. Click 'Run File' to run the program.")
+        if logic.load_file(file_path) == True:
+            self.set_output_text("")
+            self.add_output_text(f"File loaded: {file_path}")
+            self.add_output_text("Program loaded into memory. Click 'Run File' to run the program.")
+            self.add_output_text("Legacy 4-digit format detected. File has been automatically converted to the new 6-digit format.")
+        else: 
+            self.set_output_text("")
+            self.add_output_text(f"File loaded: {file_path}")
+            self.add_output_text("Program loaded into memory. Click 'Run File' to run the program.")
 
         root.title(f"UVSim - {file_path}")
 
