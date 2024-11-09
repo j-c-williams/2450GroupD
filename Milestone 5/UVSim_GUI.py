@@ -5,6 +5,7 @@ from tkinter import filedialog
 from tkinter.colorchooser import askcolor
 from UVSim import LogicalOperator
 from UVSim_FileHandler import FileHandler
+from UVSim_FileFormatConverter import FileFormatConverter
 import re
 import pickle
 import os
@@ -82,13 +83,11 @@ class Interface:
         self.text_color_on_primary = tk.StringVar(value=colors['text_color_on_primary'])
         self.text_color_on_secondary = tk.StringVar(value=colors['text_color_on_secondary'])    
 
-        # previously a magic number, update when we change number of lines logic
-        # found in validate_valid_edits() and limit_lines()
-        self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE = 100
+        # Updated to 250 lines
+        self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE = 250
 
-        # previously a magic pattern, update when we change words logic
-        # found in validate_valid_edits()
-        self.ACCEPTABLE_WORD_PATTERN = r"^[+-]\d{4}$"
+        # Updated to accept both 4-digit and 6-digit formats
+        self.ACCEPTABLE_WORD_PATTERN = r"^[+-](\d{4}|\d{6})$"
 
     def open_file(self):
         '''Open a file on the main screen to run.'''
@@ -101,10 +100,15 @@ class Interface:
 
         self.file_loaded = True
 
-        logic.load_file(file_path)
-        self.set_output_text("")
-        self.add_output_text(f"File loaded: {file_path}")
-        self.add_output_text("Program loaded into memory. Click 'Run File' to run the program.")
+        if logic.load_file(file_path) == True:
+            self.set_output_text("")
+            self.add_output_text(f"File loaded: {file_path}")
+            self.add_output_text("Program loaded into memory. Click 'Run File' to run the program.")
+            self.add_output_text("Legacy 4-digit format detected. File has been automatically converted to the new 6-digit format.")
+        else: 
+            self.set_output_text("")
+            self.add_output_text(f"File loaded: {file_path}")
+            self.add_output_text("Program loaded into memory. Click 'Run File' to run the program.")
 
         root.title(f"UVSim - {file_path}")
 
@@ -201,35 +205,47 @@ class Interface:
             file.write(file_contents)
 
         print(f"File saved at: {self.edit_filepath}")
-        messagebox.showinfo("Save As - Success", "File saved successfully!")
+        messagebox.showinfo("Save - Success", "File saved successfully!")
 
     def validate_valid_edits(self):
         file_contents = file_edit.get('1.0', tk.END)
-        file_contents_list = file_contents.split("\n")
-        print(file_contents_list)
+        file_contents_list = [line.strip() for line in file_contents.split("\n") if line.strip()]
+        
         if len(file_contents_list) > self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE:
-            print("too many words, invalid")
-            messagebox.showinfo("Save - Error", "Edited file is invalid, you may only have ",self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE, " registers.")
-            return
+            messagebox.showinfo("Save - Error", f"Edited file is invalid, you may only have {self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE} registers.")
+            return False
+
+        # Determine format from first line
+        if not file_contents_list:
+            return True  # Empty file is valid
+            
+        first_line = file_contents_list[0]
+        is_legacy_format = bool(re.match(r"^[+-]\d{4}$", first_line))
+        is_new_format = bool(re.match(r"^[+-]\d{6}$", first_line))
+        
+        if not (is_legacy_format or is_new_format):
+            messagebox.showinfo("Save - Error", "Invalid format. Each line must be either a 4-digit or 6-digit signed integer.")
+            return False
+            
+        # Check that all lines match the same format
+        pattern = r"^[+-]\d{4}$" if is_legacy_format else r"^[+-]\d{6}$"
+        
         for word in file_contents_list:
-            pattern = self.ACCEPTABLE_WORD_PATTERN
-    
-            # check if the string follows the pattern, and has text otherwise its just extra newlines
-            if not re.match(pattern, word) and word:
-                print(f"\"{word}\" failed to validate")
-                messagebox.showinfo("Save - Error", "Edited file is invalid, each line must be a 4 digit signed integer.")
+            if not re.match(pattern, word):
+                messagebox.showinfo("Save - Error", 
+                    "All lines must be in the same format (either all 4-digit or all 6-digit signed integers).")
                 return False
-                
+        
         return True
     
     def limit_lines(self):
         # Get number of lines
         total_lines = int(file_edit.index('end-1c').split('.')[0])  # Line count
         
-        # If its over the limit of 100 lines (words), delete the last one
-        if total_lines > 100:
-            messagebox.showwarning("Warning", "Maximum of ",self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE, " lines allowed.")
-            file_edit.delete(str(self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE), tk.END)
+        # If its over the limit of 250 lines (words), delete the last one
+        if total_lines > self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE:
+            messagebox.showwarning("Warning", f"Maximum of {self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE} lines allowed.")
+            file_edit.delete(f"{self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE}.0", tk.END)
     
     def update_colors(self):
         """Update all widgets with new colors"""
@@ -272,7 +288,7 @@ class Interface:
         primary_preview.configure(bg=self.primary_color.get())
         secondary_preview.configure(bg=self.secondary_color.get())
         
-         # Update all buttons and ensure their hover states are correctS
+        # Update all buttons and ensure their hover states are correct
         buttons = [btn_open, btn_run, btn_submit, btn_edit_screen, btn_color_screen,
                 btn_edit_file, btn_edit_save, btn_edit_save_as, btn_main_screen, btn_edit_main_screen,
                 btn_primary, btn_secondary, btn_reset]

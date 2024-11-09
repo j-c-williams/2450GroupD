@@ -14,7 +14,12 @@ class LogicalOperator:
     
     def load_file(self, file_path):
         #Uses the FileHandler to load a file.
-        self.words = self.file_handler.read_txt_file(file_path)
+        self.words, was_converted = self.file_handler.read_txt_file(file_path)
+        self.interface.add_output_text('test')
+        if was_converted:
+            return True
+        else:
+            return False
 
     def write(self, location):
         if location < 0:
@@ -60,7 +65,7 @@ class LogicalOperator:
             if not self.wait_for_input:
                 self.run_command()
         else:
-            self.interface.add_output_text("Input out of range, tray again.")
+            self.interface.add_output_text("Input out of range, try again.")
             return
 
     def check_int(self, s):
@@ -149,8 +154,8 @@ class LogicalOperator:
         if word.strip() == "":
             self.pointer += 1
 
-        operation = word[:3]  # Grab only the first 3 characters (operation code)
-        location = int(word[3:])   # Grab the last 2 characters for the location
+        operation = word[:4]  # Grab only the first 3 characters (operation code)
+        location = int(word[4:])   # Grab the last 2 characters for the location
 
         try:
             match operation:
