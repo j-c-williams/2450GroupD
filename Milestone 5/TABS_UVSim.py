@@ -21,11 +21,15 @@ class Interface:
 
 
         # References to the items in its tab
+        self.run_screen = None
         self.text_edit = None
         self.user_entry = None
         self.submit_button = None
 
-        #self.tab_manager = tab_manager
+        # Edit screen
+        self.edit_screen = None
+        self.edit_textbox = None
+        self.filepath_label = None
 
         self.primary_color = tk.StringVar(value=colors['primary_color'])
         self.secondary_color = tk.StringVar(value=colors['secondary_color'])
@@ -75,17 +79,22 @@ class Interface:
 
     def edit_file_transition(self):
         ''' On the normal run screen, open a text box to edit the file'''
-        # Raise the edit screen
-        show_frame(edit_screen)
-        
+        # hide all wigits of the run screen
+        # show all wigits of the edit screen
+        self.edit_screen.tkraise()
+
         # have a text edit, load up the currently loaded file
         self.open_file_edit(self.edit_filepath)
 
     def run_file_transition(self):
         ''' When transitioning back from the edit screen, load the edited file''' 
-        show_frame(main_screen)
+        # hide all edit wigits
+        # show all run wigits
+
         self.open_file(self.edit_filepath)
         self.add_output_text("Edited file loaded.")
+        self.run_screen.tkraise()
+
         
     def set_output_text(self, text):
         ''' Set the output text box '''
@@ -155,14 +164,16 @@ class Interface:
             with open(file_path, 'r') as file:
                 file_contents = file.read()
 
-            file_edit.config(state="normal")
-            file_edit.delete('1.0', tk.END)
+            self.edit_textbox.config(state="normal")
+            self.edit_textbox.delete('1.0', tk.END)
             
-            file_edit.insert(tk.END, file_contents)
-            file_edit.config(state="disabled")
+            self.edit_textbox.insert(tk.END, file_contents)
+            self.edit_textbox.config(state="disabled")
 
             self.enable_user_input()
-            file_edit.config(state="normal")
+            self.edit_textbox.config(state="normal")
+
+            self.filepath_label["text"] = self.edit_filepath
 
         else:
             self.disable_user_input()
@@ -176,7 +187,7 @@ class Interface:
             print("edit failed validation in save_as")
             return
 
-        file_contents = file_edit.get('1.0', tk.END)
+        file_contents = self.edit_textbox.get('1.0', tk.END)
 
         with open(file_path, 'w') as file:
             file.write(file_contents)
@@ -186,7 +197,7 @@ class Interface:
 
         self.edit_filepath = file_path
         self.run_file_transition()
-    
+            
     def save_file_edit(self):
         if not self.edit_filepath:
             print("Invalid file_path in save_as")
@@ -195,7 +206,7 @@ class Interface:
             print("edit failed validation in save_as")
             return
 
-        file_contents = file_edit.get('1.0', tk.END)
+        file_contents = self.edit_textbox.get('1.0', tk.END)
 
         with open(self.edit_filepath, 'w') as file:
             file.write(file_contents)
@@ -206,7 +217,7 @@ class Interface:
         self.run_file_transition()
 
     def validate_valid_edits(self):
-        file_contents = file_edit.get('1.0', tk.END)
+        file_contents = self.edit_textbox.get('1.0', tk.END)
         file_contents_list = file_contents.split("\n")
         print(file_contents_list)
         if len(file_contents_list) > self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE:
@@ -380,21 +391,53 @@ class TabManager:
         self.tabbed_interfaces[tab_name] = Interface()
 
         # Create columns
-        left_col = tk.Frame(tab_frame)
+        container = tk.Frame(tab_frame)
+        container.pack()
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        run_screen = tk.Frame(container)
+        run_screen.pack(fill="both", expand=True)
+        run_screen.grid(row=0, column=0, sticky="nsew")
+
+        left_col = tk.Frame(run_screen)
         left_col.grid(row=0, column=0, sticky="w", padx=30, pady=10)
 
-        right_col = tk.Frame(tab_frame)
-        right_col.grid(row=0, column=1, sticky="w", padx=30, pady=10)
+        right_container = tk.Frame(run_screen)
+        right_container.grid(row=0, column=1, sticky="w", padx=30, pady=10)
+
+        # Left Column -------------
+        label = ttk.Label(left_col, text=f"This is {tab_name}")
+        label.pack(padx=10, pady=10)
+
+        open_button = ttk.Button(left_col, text="Open", command=self.tabbed_interfaces[tab_name].open_file)
+        open_button.pack(pady=5)
+
+        run_button = ttk.Button(left_col, text="Run File", command=self.tabbed_interfaces[tab_name].run_file)
+        run_button.pack(pady=5)
+
+        edit_button = ttk.Button(left_col, text="Edit File", command=lambda: self.tabbed_interfaces[tab_name].edit_file_transition())
+        edit_button.pack(pady=5)
+
+        color_button = ttk.Button(left_col, text="Change Colors", command=lambda: right_col.tkraise())
+        color_button.pack(pady=5)
+
+        close_button = ttk.Button(left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame))
+        close_button.pack(pady=5)
 
         # Right Column -------------
-        
+
+        right_col = tk.Frame(right_container, height=35)
+        right_col.grid(row=0, column=0, sticky="w", padx=30, pady=10)
+
+        # Run column ----
         # Title
-        edit_label = tk.Label(right_col, text="Edit File", font=("Arial", 18))
+        edit_label = tk.Label(right_col, text="Run File", font=("Arial", 18))
         edit_label.pack(pady=50)
 
         # Large text field
-        file_edit = tk.Text(right_col, width=100, height=20)
-        file_edit.insert("1.0", "Open a file to edit it.")
+        file_edit = tk.Text(right_col, width=100)
+        file_edit.insert("1.0", "Open a file to edit it.\n")
         file_edit.config(state="disabled")
         file_edit.pack(pady=10)
 
@@ -411,52 +454,67 @@ class TabManager:
         btn_submit.config(state="disabled")
         btn_submit.pack(pady=10)
 
-        # Left Column -------------
-        label = ttk.Label(left_col, text=f"This is {tab_name}")
-        label.pack(padx=10, pady=10)
-
-        open_button = ttk.Button(left_col, text="Open", command=self.tabbed_interfaces[tab_name].open_file)
-        open_button.pack(pady=5)
-
-        run_button = ttk.Button(left_col, text="Run File", command=self.tabbed_interfaces[tab_name].run_file)
-        run_button.pack(pady=5)
-
-        edit_button = ttk.Button(left_col, text="Edit File", command=lambda: self.close_tab(tab_frame))
-        edit_button.pack(pady=5)
-
-        color_button = ttk.Button(left_col, text="Change Colors", command=lambda: self.close_tab(tab_frame))
-        color_button.pack(pady=5)
-
-        close_button = ttk.Button(left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame))
-        close_button.pack(pady=5)
-
         # Add the created tab to the notebook
         self.notebook.add(tab_frame, text=tab_name)
 
         # Reference the important interacting wigits to its interface
+        self.tabbed_interfaces[tab_name].run_screen = run_screen
         self.tabbed_interfaces[tab_name].text_edit = file_edit
         self.tabbed_interfaces[tab_name].user_entry = txt_edit
         self.tabbed_interfaces[tab_name].submit_button = btn_submit
 
+        # Edit Screen ----------------
+        edit_screen = tk.Frame(container)
+        #edit_screen.pack(fill="both", expand=True)
+        edit_screen.grid(row=0, column=0, sticky="nsew")
+
+        edit_left_col = tk.Frame(edit_screen, height=35)
+        edit_left_col.grid(row=0, column=0, sticky="w", padx=30, pady=10)
+
+        edit_right_col = tk.Frame(edit_screen, height=35)
+        edit_right_col.grid(row=0, column=1, sticky="w", padx=30, pady=10)
+        
+        # Left column
+        label = ttk.Label(edit_left_col, text=f"This is {tab_name}")
+        label.pack(padx=10, pady=10)
+
+        color_button = ttk.Button(edit_left_col, text="Change Colors", command=lambda: right_col.tkraise())
+        color_button.pack(pady=5)
+
+        close_button = ttk.Button(edit_left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame))
+        close_button.pack(pady=5)
+
+        # Right column
+        filepath_label = ttk.Label(edit_right_col, text="filepath goes here")
+        filepath_label.pack(padx=10, pady=10)
+
+        edit_textbox = tk.Text(edit_right_col, width=100, height=30)
+        edit_textbox.insert("1.0", "this is the edit screen.")
+        edit_textbox.config(state="disabled")
+        edit_textbox.pack(pady=0)
+
+        # open save save as main menu
+        open_button = ttk.Button(edit_right_col, text="Open", command=lambda: self.tabbed_interfaces[tab_name].open_file_edit())
+        open_button.pack(pady=5, padx=10, side="left")
+
+        save_button = ttk.Button(edit_right_col, text="Save", command=lambda: self.tabbed_interfaces[tab_name].save_file_edit())
+        save_button.pack(pady=5, padx=10, side="left")
+
+        save_as_button = ttk.Button(edit_right_col, text="Save As", command=lambda: self.tabbed_interfaces[tab_name].save_as_file_edit())
+        save_as_button.pack(pady=5, padx=10, side="left")
+
+        discard_changes_button = ttk.Button(edit_right_col, text="Discard Changes", command=lambda: run_screen.tkraise())
+        discard_changes_button.pack(pady=5, padx=10, side="left")
+
+        run_screen.tkraise()
+
+        self.tabbed_interfaces[tab_name].edit_screen = edit_screen
+        self.tabbed_interfaces[tab_name].edit_textbox = edit_textbox
+        self.tabbed_interfaces[tab_name].filepath_label = filepath_label
+        
     def close_tab(self, tab_frame):
         """Closes the tab containing the given tab_frame."""
         self.notebook.forget(tab_frame)
-
-    def get_current_tab_text_edit(self):
-        """Get the Text widget for the currently selected tab."""
-        current_tab = self.notebook.select()  # Get the currently selected tab (widget name)
-        current_tab_index = self.notebook.index(current_tab)  # Get the index of the selected tab
-        tab_name = f"Tab {current_tab_index + 1}"  # Generate the tab name using the index (1-based)
-
-        # Get the Text widget for the current tab
-        file_edit_widget = self.file_edit_widgets.get(tab_name)
-        if file_edit_widget:
-            # Now you have the Text widget for the current tab, you can manipulate it
-            print("Current Text widget found for:", tab_name)
-            return file_edit_widget
-        else:
-            print(f"No Text widget found for {tab_name}")
-            return None
 
 def load_color_scheme():
     """Load saved color scheme or return defaults"""
@@ -519,7 +577,7 @@ def show_frame(frame):
 # Create the main application window
 root = tk.Tk()
 root.title("UVSim GUI")
-root.geometry("1200x700")
+root.geometry("1200x720")
 
 tab_manager = TabManager(root)
 tab_manager.add_tab()
