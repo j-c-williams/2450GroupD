@@ -281,9 +281,14 @@ class TabManager:
         self.tab_count = 0
 
         add_tab_button = tk.Button(self.base, text="Add Tab", command=self.add_tab)
-        add_tab_button.pack(pady=5)
+        add_tab_button.pack(pady=5, side="left", padx=(500, 20))
 
         self.color_manager.button_secondary_hover_wigits.append(add_tab_button)
+
+        pick_color_button = tk.Button(self.base, text="Change Colors", command=lambda: color_manager.open_color_selection_window())
+        pick_color_button.pack(pady=5, side="left")
+
+        self.color_manager.button_secondary_hover_wigits.append(pick_color_button)
 
         self.tabbed_interfaces = {} # Dictionary to store interfaces by tab index
 
@@ -333,9 +338,6 @@ class TabManager:
         edit_button = tk.Button(left_col, text="Edit File", command=lambda: self.tabbed_interfaces[tab_name].edit_file_transition(), width=button_width)
         edit_button.pack(pady=5)
 
-        color_button = tk.Button(left_col, text="Change Colors", command=lambda: self.color_manager.update_colors(), width=button_width)
-        color_button.pack(pady=5)
-
         close_button = tk.Button(left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame), width=button_width)
         close_button.pack(pady=5)
 
@@ -382,9 +384,10 @@ class TabManager:
         self.color_manager.secondary_bg_wigits.append(open_button)
         self.color_manager.secondary_bg_wigits.append(run_button)
         self.color_manager.secondary_bg_wigits.append(edit_button)
-        self.color_manager.secondary_bg_wigits.append(color_button)
         self.color_manager.secondary_bg_wigits.append(close_button)
         self.color_manager.secondary_bg_wigits.append(file_edit)
+        self.color_manager.secondary_bg_wigits.append(txt_edit)
+
 
 
         self.color_manager.text_on_primary_wigits.append(label)
@@ -393,15 +396,15 @@ class TabManager:
         self.color_manager.text_on_secondary_wigits.append(open_button)
         self.color_manager.text_on_secondary_wigits.append(run_button)
         self.color_manager.text_on_secondary_wigits.append(edit_button)
-        self.color_manager.text_on_secondary_wigits.append(color_button)
         self.color_manager.text_on_secondary_wigits.append(close_button)
         self.color_manager.text_on_secondary_wigits.append(file_edit)
 
         self.color_manager.button_secondary_hover_wigits.append(open_button)
         self.color_manager.button_secondary_hover_wigits.append(run_button)
         self.color_manager.button_secondary_hover_wigits.append(edit_button)
-        self.color_manager.button_secondary_hover_wigits.append(color_button)
         self.color_manager.button_secondary_hover_wigits.append(close_button)
+        self.color_manager.button_secondary_hover_wigits.append(btn_submit)
+
 
 
 
@@ -420,9 +423,6 @@ class TabManager:
         # Left column ----
         edit_tab_label = tk.Label(edit_left_col, text=f"This is {tab_name}")
         edit_tab_label.pack(padx=10, pady=10)
-
-        color_button = tk.Button(edit_left_col, text="Change Colors", command=lambda: right_col.tkraise(), width=button_width)
-        color_button.pack(pady=5)
 
         close_button = tk.Button(edit_left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame), width=button_width)
         close_button.pack(pady=5)
@@ -459,10 +459,11 @@ class TabManager:
         self.color_manager.primary_bg_wigits.append(edit_left_col)
         self.color_manager.primary_bg_wigits.append(edit_tab_label)
 
-        self.color_manager.secondary_bg_wigits.append(open_edit_button)
-        self.color_manager.secondary_bg_wigits.append(save_button)
-        self.color_manager.secondary_bg_wigits.append(save_as_button)
-        self.color_manager.secondary_bg_wigits.append(discard_changes_button)
+        self.color_manager.button_secondary_hover_wigits.append(open_edit_button)
+        self.color_manager.button_secondary_hover_wigits.append(save_button)
+        self.color_manager.button_secondary_hover_wigits.append(save_as_button)
+        self.color_manager.button_secondary_hover_wigits.append(discard_changes_button)
+        self.color_manager.button_secondary_hover_wigits.append(close_button)
 
         self.color_manager.text_on_primary_wigits.append(edit_tab_label)
 
@@ -533,10 +534,10 @@ class ColorManager():
             
     def pick_primary_color(self):
         """Open color picker for primary color"""
-        color = askcolor(color=self.primary_color.get(), title="Choose Primary Color")
+        color = askcolor(color=self.primary_color, title="Choose Primary Color")
         if color[1]:  # If a color was chosen (not cancelled)
-            colors['primary_color'] = color[1]
-            self.primary_color.set(color[1])
+            #colors['primary_color'] = color[1]
+            self.primary_color = color[1]
             
             # Calculate text colors based on brightness
             rgb = tuple(int(color[1][i:i+2], 16) for i in (1, 3, 5))
@@ -544,33 +545,30 @@ class ColorManager():
             
             # Set text colors
             new_text_color = "#FFFFFF" if brightness < 128 else "#000000"
-            colors['text_color_on_primary'] = new_text_color
-            self.text_color_on_primary.set(new_text_color)
+            self.text_color_on_primary = new_text_color
             
             # Text on secondary uses primary color
-            colors['text_color_on_secondary'] = color[1]
-            self.text_color_on_secondary.set(color[1])
+            self.text_color_on_secondary = color[1]
             
             # Calculate hover color - lighten the primary color
             hover_rgb = tuple(min(255, int(c * 1.1)) for c in rgb)  # Lighten by 10%
-            colors['primary_button_hover_color'] = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
+            self.primary_button_hover_color = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
             
-            save_color_scheme(colors)
+            #self.save_color_scheme(colors)
             self.update_colors()
 
     def pick_secondary_color(self):
         """Open color picker for secondary color"""
-        color = askcolor(color=self.secondary_color.get(), title="Choose Secondary Color")
+        color = askcolor(color=self.secondary_color, title="Choose Secondary Color")
         if color[1]:  # If a color was chosen (not cancelled)
-            colors['secondary_color'] = color[1]
-            self.secondary_color.set(color[1])
+            self.secondary_color = color[1]
             
             # Calculate hover color - for white/light colors, slightly darken
             rgb = tuple(int(color[1][i:i+2], 16) for i in (1, 3, 5))
             hover_rgb = tuple(int(c * 0.9) for c in rgb)  # Darken by 10%
-            colors['secondary_button_hover_color'] = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
+            self.secondary_button_hover_color = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
             
-            save_color_scheme(colors)
+            #save_color_scheme(colors)
             self.update_colors()
 
     def reset_colors(self):
@@ -645,6 +643,19 @@ class ColorManager():
         button.bind("<Enter>", on_button_hover)
         button.bind("<Leave>", on_button_leave)
 
+    def open_color_selection_window(self):
+        """Open a new screen for color selection."""
+        color_window = tk.Toplevel()
+        color_window.title("Select Colors")
+
+        tk.Label(color_window, text="Select a color for Primary and Secondary:").pack(pady=10)
+
+        tk.Button(color_window, text="Choose Primary Color", command=self.pick_primary_color).pack(pady=5)
+
+        tk.Button(color_window, text="Choose Secondary Color", command=self.pick_secondary_color).pack(pady=5)
+
+        tk.Button(color_window, text="Close", command=color_window.destroy).pack(pady=10)
+
 # Create the main application window
 root = tk.Tk()
 root.title("UVSim GUI")
@@ -653,22 +664,12 @@ root.geometry("1200x720")
 main_container = tk.Frame(root, highlightthickness=0, borderwidth=0)
 main_container.pack()
 
-# style_frame = tk.Frame(main_container)
-# style_frame.grid(row=0, column=0, sticky="nsew")
-# style_frame.pack()
-
-# style_label = tk.Label(text="Color picker page goes here")
-# style_label.pack()
-
-
 color_manager = ColorManager()
 color_manager.primary_bg_wigits.append(root)
 color_manager.primary_bg_wigits.append(main_container)
 
-
 tab_manager = TabManager(main_container, color_manager)
 
 tab_manager.add_tab()
-
 
 root.mainloop()
