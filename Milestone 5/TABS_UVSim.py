@@ -79,45 +79,43 @@ class Interface:
 
     def edit_file_transition(self):
         ''' On the normal run screen, open a text box to edit the file'''
-        # hide all wigits of the run screen
-        # show all wigits of the edit screen
-        self.edit_screen.tkraise()
+        # raise the edit screen then open a file to edit
+        if self.edit_screen:
+            self.edit_screen.tkraise()
 
-        # have a text edit, load up the currently loaded file
+        # open a file if it's opened already, otherwise prompt for a new one
         self.open_file_edit(self.edit_filepath)
 
     def run_file_transition(self):
         ''' When transitioning back from the edit screen, load the edited file''' 
-        # hide all edit wigits
-        # show all run wigits
-
+        # Raise run screen, then open the file that was edited
+        # Discard changes button just raises screen without re-loading
         self.open_file(self.edit_filepath)
         self.add_output_text("Edited file loaded.")
-        self.run_screen.tkraise()
-
+        
+        if self.run_screen:
+            self.run_screen.tkraise()
         
     def set_output_text(self, text):
         ''' Set the output text box '''
-        if self.text_edit:
-            self.text_edit.config(state="normal")
-            self.text_edit.delete("1.0", tk.END)
-            self.text_edit.insert("1.0", text)
-            self.text_edit.config(state="disabled")
-            #print("set output text")
-            #print(self.text_edit)
-            #print("text: ", text)
+        # References the text edit in it's tab directly
+        if not self.text_edit:
+            return
+        self.text_edit.config(state="normal")
+        self.text_edit.delete("1.0", tk.END)
+        self.text_edit.insert("1.0", text)
+        self.text_edit.config(state="disabled")
 
     def add_output_text(self, text):
         ''' Add a new line to the output text '''
-        if self.text_edit:
-            self.text_edit.config(state="normal")
-            self.text_edit.insert(tk.END, str(text) + "\n")
-            self.text_edit.config(state="disabled")
-            #print("add output text")
-            #print(self.text_edit)
-            #print("text: ", text)
+        if not self.text_edit:
+            return
+        self.text_edit.config(state="normal")
+        self.text_edit.insert(tk.END, str(text) + "\n")
+        self.text_edit.config(state="disabled")
 
     def save_input(self, _event = None):
+        ''' Save the input given from the user in the entry box'''
         user_input = self.user_entry.get()
         if user_input == "":
             # only accept if there is an input
@@ -127,67 +125,84 @@ class Interface:
             return
         print(f"User input: {user_input}")
         self.logic.handle_input(user_input)
-        self.user_entry.delete(0, tk.END)
+
+        # reference the user entry directly
+        if self.user_entry:
+            self.user_entry.delete(0, tk.END)
 
     def enable_user_input(self):
+        ''' Enable the user entry textbox, show it is ready to accept input '''
         self.accepting_input = True
-        self.user_entry.config(state="normal")
-        self.user_entry.delete(0, tk.END)
-        self.submit_button.config(state="normal")
 
-        #btn_edit_save.config(state="normal")
-        #btn_edit_save_as.config(state="normal")
+        if self.user_entry:
+            self.user_entry.config(state="normal")
+            self.user_entry.delete(0, tk.END)
+        
+        if self.submit_button:
+            self.submit_button.config(state="normal")
 
     def disable_user_input(self):
+        ''' Disables the user entry textbox, makes it clear it isn't waiting for input yet '''
         self.accepting_input = False
-        self.user_entry.delete(0, tk.END)
-        self.user_entry.insert(0, "Run a file with user input to enable text editing.")
-        self.user_entry.config(state="disabled")
-        self.submit_button.config(state="disabled")
-
-        #btn_edit_save.config(state="disabled")
-        #btn_edit_save_as.config(state="disabled")
+        
+        if self.user_entry:
+            self.user_entry.delete(0, tk.END)
+            self.user_entry.insert(0, "Run a file with user input to enable text editing.")
+            self.user_entry.config(state="disabled")
+        
+        if self.submit_button:
+            self.submit_button.config(state="disabled")
 
     def open_file_edit(self, preloaded_filepath = ""):
-        '''Open a file on the edit screen to edit.'''
+        '''Open a file on the edit screen to edit. Use the given filepath if given'''
         
-        if not preloaded_filepath:
+        # Load up given filepath if available, otherwise prompt
+        if preloaded_filepath:
+            file_path = preloaded_filepath
+        else:
             file_path = askopenfilename(
                 filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
             )
-        else:
-            file_path = preloaded_filepath
         
-        if file_path:
-            self.edit_filepath = file_path
+        if not file_path:
+            self.disable_user_input()
+            print("Opened file and no filepath was selected.")
+            return
+        
 
-            with open(file_path, 'r') as file:
-                file_contents = file.read()
+        with open(file_path, 'r') as file:
+            file_contents = file.read()
 
+        # Reset the textbox to have the new file contents
+        if self.edit_textbox:
             self.edit_textbox.config(state="normal")
             self.edit_textbox.delete('1.0', tk.END)
-            
             self.edit_textbox.insert(tk.END, file_contents)
-            self.edit_textbox.config(state="disabled")
+        
+        # Set the label to show the current loaded file
+        if self.filepath_label:
+            self.filepath_label["text"] = file_path
 
-            self.enable_user_input()
-            self.edit_textbox.config(state="normal")
+        self.edit_filepath = file_path
 
-            self.filepath_label["text"] = self.edit_filepath
-
-        else:
-            self.disable_user_input()
-    
     def save_as_file_edit(self):
+        ''' Save As functionality for the edit screen. Prompt the user to choose how to save. '''
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"),("All files", "*.*")])
+        
+        if not self.edit_textbox:
+            print("no edit screen textbox saved in interface")
+            return
+        
+        file_contents = self.edit_textbox.get('1.0', tk.END)
+
         if not file_path:
             print("Invalid file_path in save_as")
             return
-        if not self.validate_valid_edits():
+        if not self.validate_valid_edits(file_contents):
             print("edit failed validation in save_as")
             return
-
-        file_contents = self.edit_textbox.get('1.0', tk.END)
+        
+        # If we pass the sanity checks, execute
 
         with open(file_path, 'w') as file:
             file.write(file_contents)
@@ -195,18 +210,24 @@ class Interface:
         print(f"File saved at: {file_path}")
         messagebox.showinfo("Save As - Success", "File saved successfully!")
 
+        # Transition back to the run screen with the new saved file.
         self.edit_filepath = file_path
         self.run_file_transition()
             
     def save_file_edit(self):
-        if not self.edit_filepath:
-            print("Invalid file_path in save_as")
-            return
-        if not self.validate_valid_edits():
-            print("edit failed validation in save_as")
-            return
+        ''' Save the file to the current filepath and go back to run screen '''
 
+        if not self.edit_textbox:
+            print("no edit textbox found in save_file")
+        
         file_contents = self.edit_textbox.get('1.0', tk.END)
+
+        if not self.edit_filepath:
+            print("Invalid file_path in save_file")
+            return
+        if not self.validate_valid_edits(file_contents):
+            print("edit failed validation in save_file")
+            return
 
         with open(self.edit_filepath, 'w') as file:
             file.write(file_contents)
@@ -216,8 +237,8 @@ class Interface:
 
         self.run_file_transition()
 
-    def validate_valid_edits(self):
-        file_contents = self.edit_textbox.get('1.0', tk.END)
+    def validate_valid_edits(self, file_contents):
+        ''' Check to see that the edits to the file are valid. ''' 
         file_contents_list = file_contents.split("\n")
         print(file_contents_list)
         if len(file_contents_list) > self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE:
@@ -236,17 +257,22 @@ class Interface:
         return True
     
     def limit_lines(self, arg2 = ""):
-        print(arg2)
+        ''' Stop the user from creating more than the acceptable number of lines on the edit screen'''
+        
+        if not self.edit_textbox:
+            print("Textbox not found in limit_lines")
+            return
+
         # Get number of lines
-        total_lines = int(file_edit.index('end-1c').split('.')[0])  # Line count
+        total_lines = int(self.edit_textbox.index('end-1c').split('.')[0])  # Line count
         
         # If its over the limit of 100 lines (words), delete the last one
         if total_lines > self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE:
             messagebox.showwarning("Warning", "Maximum of ",self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE, " lines allowed.")
-            file_edit.delete(str(self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE), tk.END)
+            self.edit_textbox.delete(str(self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE), tk.END)
     
     def update_colors(self):
-        """Update all widgets with new colors"""
+        ''' Update all widgets with new colors '''
         # Update root and container
         root.configure(bg=self.primary_color.get())
         container.configure(bg=self.primary_color.get())
@@ -380,33 +406,38 @@ class TabManager:
         self.tabbed_interfaces = {} # Dictionary to store interfaces by tab index
 
     def add_tab(self):
-        """Adds a new tab with a close button inside the tab content."""
+        ''' Adds a new tab with a close button inside the tab content. '''
         self.tab_count += 1
 
         # Create tab
         tab_frame = ttk.Frame(self.notebook)
         tab_name = f"Tab {self.tab_count}"
         
+        # Add the created tab to the notebook
+        self.notebook.add(tab_frame, text=tab_name)
+
         # Create new local tab interface
         self.tabbed_interfaces[tab_name] = Interface()
 
-        # Create columns
+        # Create container to hold run and edit screens
         container = tk.Frame(tab_frame)
         container.pack()
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
+        # Create run screen ------------
         run_screen = tk.Frame(container)
         run_screen.pack(fill="both", expand=True)
         run_screen.grid(row=0, column=0, sticky="nsew")
 
+        # Create columns for run screen
         left_col = tk.Frame(run_screen)
         left_col.grid(row=0, column=0, sticky="w", padx=30, pady=10)
 
         right_container = tk.Frame(run_screen)
         right_container.grid(row=0, column=1, sticky="w", padx=30, pady=10)
 
-        # Left Column -------------
+        # Left Column ----
         label = ttk.Label(left_col, text=f"This is {tab_name}")
         label.pack(padx=10, pady=10)
 
@@ -425,12 +456,10 @@ class TabManager:
         close_button = ttk.Button(left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame))
         close_button.pack(pady=5)
 
-        # Right Column -------------
-
+        # Right Column ----
         right_col = tk.Frame(right_container, height=35)
         right_col.grid(row=0, column=0, sticky="w", padx=30, pady=10)
 
-        # Run column ----
         # Title
         edit_label = tk.Label(right_col, text="Run File", font=("Arial", 18))
         edit_label.pack(pady=50)
@@ -454,18 +483,16 @@ class TabManager:
         btn_submit.config(state="disabled")
         btn_submit.pack(pady=10)
 
-        # Add the created tab to the notebook
-        self.notebook.add(tab_frame, text=tab_name)
-
-        # Reference the important interacting wigits to its interface
+        # Resolve variables and save wigits into interface
         self.tabbed_interfaces[tab_name].run_screen = run_screen
         self.tabbed_interfaces[tab_name].text_edit = file_edit
         self.tabbed_interfaces[tab_name].user_entry = txt_edit
         self.tabbed_interfaces[tab_name].submit_button = btn_submit
 
+
+
         # Edit Screen ----------------
         edit_screen = tk.Frame(container)
-        #edit_screen.pack(fill="both", expand=True)
         edit_screen.grid(row=0, column=0, sticky="nsew")
 
         edit_left_col = tk.Frame(edit_screen, height=35)
@@ -474,7 +501,7 @@ class TabManager:
         edit_right_col = tk.Frame(edit_screen, height=35)
         edit_right_col.grid(row=0, column=1, sticky="w", padx=30, pady=10)
         
-        # Left column
+        # Left column ----
         label = ttk.Label(edit_left_col, text=f"This is {tab_name}")
         label.pack(padx=10, pady=10)
 
@@ -484,7 +511,7 @@ class TabManager:
         close_button = ttk.Button(edit_left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame))
         close_button.pack(pady=5)
 
-        # Right column
+        # Right column ----
         filepath_label = ttk.Label(edit_right_col, text="filepath goes here")
         filepath_label.pack(padx=10, pady=10)
 
@@ -492,8 +519,9 @@ class TabManager:
         edit_textbox.insert("1.0", "this is the edit screen.")
         edit_textbox.config(state="disabled")
         edit_textbox.pack(pady=0)
+        edit_textbox.bind("<KeyRelease>", self.tabbed_interfaces[tab_name].limit_lines)
 
-        # open save save as main menu
+        # Four control buttons
         open_button = ttk.Button(edit_right_col, text="Open", command=lambda: self.tabbed_interfaces[tab_name].open_file_edit())
         open_button.pack(pady=5, padx=10, side="left")
 
@@ -506,14 +534,15 @@ class TabManager:
         discard_changes_button = ttk.Button(edit_right_col, text="Discard Changes", command=lambda: run_screen.tkraise())
         discard_changes_button.pack(pady=5, padx=10, side="left")
 
-        run_screen.tkraise()
-
+        # Resolve variables and save wigits into interface
         self.tabbed_interfaces[tab_name].edit_screen = edit_screen
         self.tabbed_interfaces[tab_name].edit_textbox = edit_textbox
         self.tabbed_interfaces[tab_name].filepath_label = filepath_label
+
+        run_screen.tkraise()
         
     def close_tab(self, tab_frame):
-        """Closes the tab containing the given tab_frame."""
+        ''' Closes the tab containing the given tab_frame. '''
         self.notebook.forget(tab_frame)
 
 def load_color_scheme():
