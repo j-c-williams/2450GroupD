@@ -19,7 +19,6 @@ class Interface:
 
         self.logic = LogicalOperator(self, self.file_handler)
 
-
         # References to the items in its tab
         self.run_screen = None
         self.text_edit = None
@@ -486,58 +485,62 @@ class ColorManager():
         self.button_primary_hover_wigits = []
         self.button_secondary_hover_wigits = []
 
-        self.primary_color = "#4C721D"
-        self.secondary_color = "#FFFFFF"
-        self.text_color_on_primary = "#FFFFFF"
-        self.text_color_on_secondary = "#330000"
-        self.primary_button_hover_color = "#5d8b24"
-        self.secondary_button_hover_color= "#F0F0F0" 
+        self.colors = {
+            "primary_color": "#4C721D",
+            "secondary_color": "#FFFFFF",
+            "text_color_on_primary": "#FFFFFF",
+            "text_color_on_secondary": "#330000",
+            "primary_button_hover_color": "#5d8b24",
+            "secondary_button_hover_color": "#F0F0F0" 
+        }
+
+        self.load_color_scheme()
 
     def update_colors(self):
         ''' Update all widgets with set colors '''
     
         for wigit in self.primary_bg_wigits:
             try:
-                wigit.config(bg=self.primary_color)
+                wigit.config(bg=self.colors["primary_color"])
             except Exception as e:
                 print("error changing bg color of wigit ", e)
         
         for wigit in self.secondary_bg_wigits:
             try:
-                wigit.config(bg=self.secondary_color)
+                wigit.config(bg=self.colors["secondary_color"])
             except Exception as e:
                 print("error changing bg color of wigit ", e)
         
         for wigit in self.text_on_primary_wigits:
             try:
-                wigit.config(fg=self.text_color_on_primary)
+                wigit.config(fg=self.colors["text_color_on_primary"])
             except Exception as e:
                 print("error changing bg color of wigit ", e)
         
         for wigit in self.text_on_secondary_wigits:
             try:
-                wigit.config(fg=self.text_color_on_secondary)
+                wigit.config(fg=self.colors["text_color_on_secondary"])
             except Exception as e:
                 print("error changing bg color of wigit ", e)
 
         for wigit in self.button_primary_hover_wigits:
             try:
-                wigit.config(bg=self.primary_color, fg=self.text_color_on_primary, activebackground=self.primary_button_hover_color, activeforeground=self.text_color_on_secondary)
+                wigit.config(bg=self.colors["primary_color"], fg=self.colors["text_color_on_primary"], activebackground=self.colors["primary_button_hover_color"], activeforeground=self.colors["text_color_on_secondary"])
             except Exception as e:
                 print("error changing bg color of wigit ", e)
 
         for wigit in self.button_secondary_hover_wigits:
             try:
-                wigit.config(bg=self.secondary_color, fg=self.text_color_on_secondary, activebackground=self.secondary_button_hover_color, activeforeground=self.text_color_on_primary)
+                wigit.config(bg=self.colors["secondary_color"], fg=self.colors["text_color_on_secondary"], activebackground=self.colors["secondary_button_hover_color"], activeforeground=self.colors["text_color_on_primary"])
             except Exception as e:
                 print("error changing bg color of wigit ", e)
             
     def pick_primary_color(self):
         """Open color picker for primary color"""
-        color = askcolor(color=self.primary_color, title="Choose Primary Color")
+        color = askcolor(color=self.colors["primary_color"], title="Choose Primary Color")
         if color[1]:  # If a color was chosen (not cancelled)
             #colors['primary_color'] = color[1]
-            self.primary_color = color[1]
+            self.colors["primary_color"] = color[1]
             
             # Calculate text colors based on brightness
             rgb = tuple(int(color[1][i:i+2], 16) for i in (1, 3, 5))
@@ -545,36 +548,35 @@ class ColorManager():
             
             # Set text colors
             new_text_color = "#FFFFFF" if brightness < 128 else "#000000"
-            self.text_color_on_primary = new_text_color
+            self.colors["text_color_on_primary"] = new_text_color
             
             # Text on secondary uses primary color
-            self.text_color_on_secondary = color[1]
+            self.colors["text_color_on_secondary"] = color[1]
             
             # Calculate hover color - lighten the primary color
             hover_rgb = tuple(min(255, int(c * 1.1)) for c in rgb)  # Lighten by 10%
-            self.primary_button_hover_color = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
+            self.colors["primary_button_hover_color"] = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
             
-            #self.save_color_scheme(colors)
+            self.save_color_scheme()
             self.update_colors()
 
     def pick_secondary_color(self):
         """Open color picker for secondary color"""
-        color = askcolor(color=self.secondary_color, title="Choose Secondary Color")
+        color = askcolor(color=self.colors["secondary_color"], title="Choose Secondary Color")
         if color[1]:  # If a color was chosen (not cancelled)
-            self.secondary_color = color[1]
+            self.colors["secondary_color"] = color[1]
             
             # Calculate hover color - for white/light colors, slightly darken
             rgb = tuple(int(color[1][i:i+2], 16) for i in (1, 3, 5))
             hover_rgb = tuple(int(c * 0.9) for c in rgb)  # Darken by 10%
-            self.secondary_button_hover_color = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
+            self.colors["secondary_button_hover_color"] = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
             
-            #save_color_scheme(colors)
+            self.save_color_scheme()
             self.update_colors()
 
     def reset_colors(self):
         """Reset colors to UVU default"""
-        global colors  
-        colors = {
+        self.colors = {
             'primary_color': "#4C721D",
             'secondary_color': "#FFFFFF",
             'text_color_on_primary': "#FFFFFF",
@@ -582,22 +584,15 @@ class ColorManager():
             'primary_button_hover_color': "#5d8b24",  
             'secondary_button_hover_color': "#F0F0F0" 
         }
-        
-        # Update all tkinter variables
-        self.primary_color.set(colors['primary_color'])
-        self.secondary_color.set(colors['secondary_color'])
-        self.text_color_on_primary.set(colors['text_color_on_primary'])
-        self.text_color_on_secondary.set(colors['text_color_on_secondary'])
-        
-        save_color_scheme(colors)
+                
+        self.save_color_scheme()
         self.update_colors()
 
     def load_color_scheme(self):
         """Load saved color scheme or return defaults"""
         try:
             with open('.color_config.pkl', 'rb') as f:
-                colors = pickle.load(f)
-                return colors
+                self.colors = pickle.load(f)
         except FileNotFoundError:
             return {
                 'primary_color': "#4C721D",  # UVU Green
@@ -608,10 +603,10 @@ class ColorManager():
                 'secondary_button_hover_color': "#F5F5F5"
             }
 
-    def save_color_scheme(self, colors):
+    def save_color_scheme(self):
         """Save color scheme to file"""
         with open('.color_config.pkl', 'wb') as f:
-            pickle.dump(colors, f)
+            pickle.dump(self.colors, f)
 
     def on_button_hover(self, event):
         print("temporary color bypass on_button_hover")
@@ -653,6 +648,8 @@ class ColorManager():
         tk.Button(color_window, text="Choose Primary Color", command=self.pick_primary_color).pack(pady=5)
 
         tk.Button(color_window, text="Choose Secondary Color", command=self.pick_secondary_color).pack(pady=5)
+
+        tk.Button(color_window, text="Reset to UVU Colors", command=self.reset_colors).pack(pady=5)
 
         tk.Button(color_window, text="Close", command=color_window.destroy).pack(pady=10)
 
