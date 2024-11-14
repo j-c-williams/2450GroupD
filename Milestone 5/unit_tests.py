@@ -175,16 +175,16 @@ class TestAddFunction(unittest.TestCase):
         self.assertEqual(self.logic.accumulator, -2) #: -2 + 0 = -2
     
     def test_add_to_accumulator_pos_overflow(self):
-        self.logic.accumulator = 9999
+        self.logic.accumulator = 999999
         self.logic.words[5] = "2"  # Set up a addative
         self.logic.add(5)  # Add location 5 content to accumulator
-        self.assertEqual(self.logic.accumulator, 1)  # 9999 + 2 = 10001 -> truncated to 0001 or 1
+        self.assertEqual(self.logic.accumulator, 1)  # 999999 + 2 = 10001 -> truncated to 0001 or 1
 
     def test_add_negative_overflow(self):
-        self.logic.accumulator = -9999
+        self.logic.accumulator = -999999
         self.logic.words[6] = "-2"  # Set negative
         self.logic.add(6) # Add location 6 content to accumulator
-        self.assertEqual(self.logic.accumulator, -1) # -9999 + (-2) = -10001 -> truncated to -0001 or -1
+        self.assertEqual(self.logic.accumulator, -1) # -999999 + (-2) = -10001 -> truncated to -0001 or -1
 
 class TestSubFunction(unittest.TestCase):
     def setUp(self):
@@ -207,13 +207,13 @@ class TestSubFunction(unittest.TestCase):
         self.assertEqual(self.logic.accumulator, 2) #: 0 - (-2) = 2
 
     def test_subtract_from_accumulator_pos_overflow(self):
-        self.logic.accumulator = 9999
+        self.logic.accumulator = 999999
         self.logic.words[5] = "-2"  # Set up a addative
         self.logic.subtract(5)  # Add location 5 content to accumulator
         self.assertEqual(self.logic.accumulator, 1)  # 9999 + 2 = 10001 -> truncated to 0001 or 1
 
     def test_subtract_negative_overflow(self):
-        self.logic.accumulator = -9999
+        self.logic.accumulator = -999999
         self.logic.words[6] = "2"  # Set negative
         self.logic.subtract(6) # Add location 6 content to accumulator
         self.assertEqual(self.logic.accumulator, -1) # -9999 + (-2) = -10001 -> truncated to -0001 or -1
@@ -289,9 +289,9 @@ class TestMultFunction(unittest.TestCase):
         self.assertEqual(self.logic.accumulator, -6) #: -2 * 3 = -6
     
     def test_multiply_accumulator_large(self):
-        self.logic.words[5] = "9999"  # Set up a addative
+        self.logic.words[5] = "999999"  # Set up a addative
         self.logic.multiply(5)  # Add location 5 content to accumulator
-        self.assertEqual(self.logic.accumulator, 9997)  # 9999 * 3 = 29997 -> 9997(truncatated)
+        self.assertEqual(self.logic.accumulator, 999997)  # 9999 * 3 = 29997 -> 9997(truncatated)
 
     def test_multiply_zero(self):
         self.logic.words[6] = "0"  # Set negative
