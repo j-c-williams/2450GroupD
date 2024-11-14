@@ -9,7 +9,7 @@ class LogicalOperator:
         self.wait_for_input = True
         self.WORD_LENGTH = 6
         self.MAX_ADDRESSES = 249
-        self.MAX_INPUT = 100000
+        self.MAX_INPUT = 1000000
         self.MIN_INPUT = -1000000
     
     def load_file(self, file_path):
@@ -114,7 +114,7 @@ class LogicalOperator:
         divisor = float(self.words[location]) 
         if divisor == 0:
             raise ZeroDivisionError("Cannot divide by zero.")
-        self.accumulator = float(self.accumulator) / divisor 
+        self.accumulator = int(float(self.accumulator) / divisor )
 
     def branch(self, location):
         if location < 0 or location > self.MAX_ADDRESSES:
