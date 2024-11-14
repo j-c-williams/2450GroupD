@@ -19,7 +19,6 @@ class Interface:
 
         self.logic = LogicalOperator(self, self.file_handler)
 
-
         # References to the items in its tab
         self.run_screen = None
         self.text_edit = None
@@ -30,11 +29,6 @@ class Interface:
         self.edit_screen = None
         self.edit_textbox = None
         self.filepath_label = None
-
-        self.primary_color = tk.StringVar(value=colors['primary_color'])
-        self.secondary_color = tk.StringVar(value=colors['secondary_color'])
-        self.text_color_on_primary = tk.StringVar(value=colors['text_color_on_primary'])
-        self.text_color_on_secondary = tk.StringVar(value=colors['text_color_on_secondary'])    
 
         # previously a magic number, update when we change number of lines logic
         # found in validate_valid_edits() and limit_lines()
@@ -270,147 +264,40 @@ class Interface:
         if total_lines > self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE:
             messagebox.showwarning("Warning", "Maximum of ",self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE, " lines allowed.")
             self.edit_textbox.delete(str(self.NUMBER_OF_ACCEPTABLE_LINES_IN_FILE), tk.END)
-    
-    def update_colors(self):
-        ''' Update all widgets with new colors '''
-        # Update root and container
-        root.configure(bg=self.primary_color.get())
-        container.configure(bg=self.primary_color.get())
-        
-        # Update main screen
-        main_screen.configure(bg=self.primary_color.get())
-        frm_buttons.configure(bg=self.secondary_color.get())
-        buttons_text.configure(bg=self.secondary_color.get(), fg=self.text_color_on_secondary.get())
-        output_text.configure(bg=self.primary_color.get(), fg=self.text_color_on_primary.get())
-        input_frame.configure(bg=self.primary_color.get())
-        instruct.configure(bg=self.primary_color.get(), fg=self.text_color_on_primary.get())
-        txt_edit.configure(
-            bg=self.primary_color.get(),
-            fg=self.text_color_on_primary.get(),
-            insertbackground=self.text_color_on_primary.get()
-        )
-        settings_text.configure(bg=self.secondary_color.get(), fg=self.text_color_on_secondary.get())
-        
-        # Update edit screen
-        edit_screen.configure(bg=self.primary_color.get())
-        left_col.configure(bg=self.secondary_color.get())
-        right_col.configure(bg=self.primary_color.get())
-        edit_label.configure(bg=self.primary_color.get(), fg=self.text_color_on_primary.get())
-        file_edit.configure(
-            bg=self.primary_color.get(),
-            fg=self.text_color_on_primary.get(),
-            insertbackground=self.text_color_on_primary.get()
-        )
-        
-        # Update color screen
-        color_screen.configure(bg=self.primary_color.get())
-        color_content.configure(bg=self.primary_color.get())
-        color_label.configure(bg=self.primary_color.get(), fg=self.text_color_on_primary.get())
-        controls_frame.configure(bg=self.primary_color.get())
-        primary_section.configure(bg=self.primary_color.get())
-        secondary_section.configure(bg=self.primary_color.get())
-        primary_preview.configure(bg=self.primary_color.get())
-        secondary_preview.configure(bg=self.secondary_color.get())
-        
-         # Update all buttons and ensure their hover states are correctS
-        buttons = [btn_open, btn_run, btn_submit, btn_edit_screen, btn_color_screen,
-                btn_edit_file, btn_edit_save, btn_edit_save_as, btn_main_screen, btn_edit_main_screen,
-                btn_primary, btn_secondary, btn_reset]
-        
-        for button in buttons:
-            # List only the secondary buttons
-            is_secondary = button in [btn_primary, btn_secondary, btn_main_screen, btn_submit, btn_edit_save, btn_edit_save_as, btn_edit_file, btn_edit_main_screen]
-            button.configure(
-                bg=self.secondary_color.get() if is_secondary else self.primary_color.get(),
-                fg=self.text_color_on_secondary.get() if is_secondary else self.text_color_on_primary.get(),
-                activebackground=colors['secondary_button_hover_color'] if is_secondary else colors['primary_button_hover_color'],
-                activeforeground=self.text_color_on_secondary.get() if is_secondary else self.text_color_on_primary.get()
-            )
-
-    def pick_primary_color(self):
-        """Open color picker for primary color"""
-        color = askcolor(color=self.primary_color.get(), title="Choose Primary Color")
-        if color[1]:  # If a color was chosen (not cancelled)
-            colors['primary_color'] = color[1]
-            self.primary_color.set(color[1])
-            
-            # Calculate text colors based on brightness
-            rgb = tuple(int(color[1][i:i+2], 16) for i in (1, 3, 5))
-            brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
-            
-            # Set text colors
-            new_text_color = "#FFFFFF" if brightness < 128 else "#000000"
-            colors['text_color_on_primary'] = new_text_color
-            self.text_color_on_primary.set(new_text_color)
-            
-            # Text on secondary uses primary color
-            colors['text_color_on_secondary'] = color[1]
-            self.text_color_on_secondary.set(color[1])
-            
-            # Calculate hover color - lighten the primary color
-            hover_rgb = tuple(min(255, int(c * 1.1)) for c in rgb)  # Lighten by 10%
-            colors['primary_button_hover_color'] = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
-            
-            save_color_scheme(colors)
-            self.update_colors()
-
-    def pick_secondary_color(self):
-        """Open color picker for secondary color"""
-        color = askcolor(color=self.secondary_color.get(), title="Choose Secondary Color")
-        if color[1]:  # If a color was chosen (not cancelled)
-            colors['secondary_color'] = color[1]
-            self.secondary_color.set(color[1])
-            
-            # Calculate hover color - for white/light colors, slightly darken
-            rgb = tuple(int(color[1][i:i+2], 16) for i in (1, 3, 5))
-            hover_rgb = tuple(int(c * 0.9) for c in rgb)  # Darken by 10%
-            colors['secondary_button_hover_color'] = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
-            
-            save_color_scheme(colors)
-            self.update_colors()
-
-    def reset_colors(self):
-        """Reset colors to UVU default"""
-        global colors  
-        colors = {
-            'primary_color': "#4C721D",
-            'secondary_color': "#FFFFFF",
-            'text_color_on_primary': "#FFFFFF",
-            'text_color_on_secondary': "#4C721D",
-            'primary_button_hover_color': "#5d8b24",  
-            'secondary_button_hover_color': "#F0F0F0" 
-        }
-        
-        # Update all tkinter variables
-        self.primary_color.set(colors['primary_color'])
-        self.secondary_color.set(colors['secondary_color'])
-        self.text_color_on_primary.set(colors['text_color_on_primary'])
-        self.text_color_on_secondary.set(colors['text_color_on_secondary'])
-        
-        save_color_scheme(colors)
-        self.update_colors()
 
 class TabManager:
-    def __init__(self, base, interface=None):
+    def __init__(self, base, color_manager):
         self.base = base
+        self.color_manager = color_manager
 
+        style=ttk.Style()
+        style.layout("TNotebook", [])
+        style.configure("TNotebook", highlightbackground="#848a98",tabmargins=0)
         # Create the tabbed notebook
-        self.notebook = ttk.Notebook(self.base)
-        self.notebook.pack(expand=1, fill="both")
+        self.notebook = ttk.Notebook(self.base, style="TNotebook")
+        self.notebook.pack(expand=1, fill="both", pady = 10)
 
         self.tab_count = 0
 
         add_tab_button = tk.Button(self.base, text="Add Tab", command=self.add_tab)
-        add_tab_button.pack(pady=5)
+        add_tab_button.pack(pady=5, side="left", padx=(500, 20))
+
+        self.color_manager.button_secondary_hover_wigits.append(add_tab_button)
+
+        pick_color_button = tk.Button(self.base, text="Change Colors", command=lambda: color_manager.open_color_selection_window())
+        pick_color_button.pack(pady=5, side="left")
+
+        self.color_manager.button_secondary_hover_wigits.append(pick_color_button)
 
         self.tabbed_interfaces = {} # Dictionary to store interfaces by tab index
 
     def add_tab(self):
         ''' Adds a new tab with a close button inside the tab content. '''
         self.tab_count += 1
+        button_width = 15
 
         # Create tab
-        tab_frame = ttk.Frame(self.notebook)
+        tab_frame = tk.Frame(self.notebook, highlightthickness=0, borderwidth=0)
         tab_name = f"Tab {self.tab_count}"
         
         # Add the created tab to the notebook
@@ -431,29 +318,26 @@ class TabManager:
         run_screen.grid(row=0, column=0, sticky="nsew")
 
         # Create columns for run screen
-        left_col = tk.Frame(run_screen)
+        left_col = tk.Frame(run_screen, padx=5, pady=200)
         left_col.grid(row=0, column=0, sticky="w", padx=30, pady=10)
 
-        right_container = tk.Frame(run_screen)
+        right_container = tk.Frame(run_screen, padx=30, pady=10)
         right_container.grid(row=0, column=1, sticky="w", padx=30, pady=10)
 
         # Left Column ----
-        label = ttk.Label(left_col, text=f"This is {tab_name}")
+        label = tk.Label(left_col, text=f"This is {tab_name}")
         label.pack(padx=10, pady=10)
 
-        open_button = ttk.Button(left_col, text="Open", command=self.tabbed_interfaces[tab_name].open_file)
+        open_button = tk.Button(left_col, text="Open", command=self.tabbed_interfaces[tab_name].open_file, width=button_width)
         open_button.pack(pady=5)
 
-        run_button = ttk.Button(left_col, text="Run File", command=self.tabbed_interfaces[tab_name].run_file)
+        run_button = tk.Button(left_col, text="Run File", command=self.tabbed_interfaces[tab_name].run_file, width=button_width)
         run_button.pack(pady=5)
 
-        edit_button = ttk.Button(left_col, text="Edit File", command=lambda: self.tabbed_interfaces[tab_name].edit_file_transition())
+        edit_button = tk.Button(left_col, text="Edit File", command=lambda: self.tabbed_interfaces[tab_name].edit_file_transition(), width=button_width)
         edit_button.pack(pady=5)
 
-        color_button = ttk.Button(left_col, text="Change Colors", command=lambda: right_col.tkraise())
-        color_button.pack(pady=5)
-
-        close_button = ttk.Button(left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame))
+        close_button = tk.Button(left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame), width=button_width)
         close_button.pack(pady=5)
 
         # Right Column ----
@@ -466,7 +350,7 @@ class TabManager:
 
         # Large text field
         file_edit = tk.Text(right_col, width=100)
-        file_edit.insert("1.0", "Open a file to edit it.\n")
+        file_edit.insert("1.0", "Open a file to run it.\n")
         file_edit.config(state="disabled")
         file_edit.pack(pady=10)
 
@@ -475,19 +359,53 @@ class TabManager:
         txt_edit.insert(0, "Run a file with user input to enable text editing.")
         txt_edit.bind('<Return>', self.tabbed_interfaces[tab_name].save_input)
         txt_edit.config(state="disabled")
-        txt_edit.pack(padx=20)
+        txt_edit.pack(padx=20, side="left")
 
         # Submit Button
-        btn_submit = tk.Button(right_col, text="Submit", command=lambda: self.tabbed_interfaces[tab_name].save_input())
-        style_button(btn_submit, False)
+        btn_submit = tk.Button(right_col, text="Submit", command=lambda: self.tabbed_interfaces[tab_name].save_input(), width=button_width)
+        #style_button(btn_submit, False)
         btn_submit.config(state="disabled")
-        btn_submit.pack(pady=10)
+        btn_submit.pack(pady=10, side="left")
 
         # Resolve variables and save wigits into interface
         self.tabbed_interfaces[tab_name].run_screen = run_screen
         self.tabbed_interfaces[tab_name].text_edit = file_edit
         self.tabbed_interfaces[tab_name].user_entry = txt_edit
         self.tabbed_interfaces[tab_name].submit_button = btn_submit
+
+        self.color_manager.primary_bg_wigits.append(run_screen)
+        self.color_manager.primary_bg_wigits.append(right_container)
+        self.color_manager.primary_bg_wigits.append(right_col)
+        self.color_manager.primary_bg_wigits.append(edit_label)
+        self.color_manager.primary_bg_wigits.append(label)
+        self.color_manager.primary_bg_wigits.append(left_col)
+
+        self.color_manager.secondary_bg_wigits.append(open_button)
+        self.color_manager.secondary_bg_wigits.append(run_button)
+        self.color_manager.secondary_bg_wigits.append(edit_button)
+        self.color_manager.secondary_bg_wigits.append(close_button)
+        self.color_manager.secondary_bg_wigits.append(file_edit)
+        self.color_manager.secondary_bg_wigits.append(txt_edit)
+
+
+
+        self.color_manager.text_on_primary_wigits.append(label)
+        self.color_manager.text_on_primary_wigits.append(edit_label)
+
+        self.color_manager.text_on_secondary_wigits.append(open_button)
+        self.color_manager.text_on_secondary_wigits.append(run_button)
+        self.color_manager.text_on_secondary_wigits.append(edit_button)
+        self.color_manager.text_on_secondary_wigits.append(close_button)
+        self.color_manager.text_on_secondary_wigits.append(file_edit)
+
+        self.color_manager.button_secondary_hover_wigits.append(open_button)
+        self.color_manager.button_secondary_hover_wigits.append(run_button)
+        self.color_manager.button_secondary_hover_wigits.append(edit_button)
+        self.color_manager.button_secondary_hover_wigits.append(close_button)
+        self.color_manager.button_secondary_hover_wigits.append(btn_submit)
+
+
+
 
 
 
@@ -502,17 +420,14 @@ class TabManager:
         edit_right_col.grid(row=0, column=1, sticky="w", padx=30, pady=10)
         
         # Left column ----
-        label = ttk.Label(edit_left_col, text=f"This is {tab_name}")
-        label.pack(padx=10, pady=10)
+        edit_tab_label = tk.Label(edit_left_col, text=f"This is {tab_name}")
+        edit_tab_label.pack(padx=10, pady=10)
 
-        color_button = ttk.Button(edit_left_col, text="Change Colors", command=lambda: right_col.tkraise())
-        color_button.pack(pady=5)
-
-        close_button = ttk.Button(edit_left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame))
+        close_button = tk.Button(edit_left_col, text="Close Tab", command=lambda: self.close_tab(tab_frame), width=button_width)
         close_button.pack(pady=5)
 
         # Right column ----
-        filepath_label = ttk.Label(edit_right_col, text="filepath goes here")
+        filepath_label = tk.Label(edit_right_col, text="filepath goes here")
         filepath_label.pack(padx=10, pady=10)
 
         edit_textbox = tk.Text(edit_right_col, width=100, height=30)
@@ -522,16 +437,16 @@ class TabManager:
         edit_textbox.bind("<KeyRelease>", self.tabbed_interfaces[tab_name].limit_lines)
 
         # Four control buttons
-        open_button = ttk.Button(edit_right_col, text="Open", command=lambda: self.tabbed_interfaces[tab_name].open_file_edit())
-        open_button.pack(pady=5, padx=10, side="left")
+        open_edit_button = tk.Button(edit_right_col, text="Open", command=lambda: self.tabbed_interfaces[tab_name].open_file_edit(), width=button_width)
+        open_edit_button.pack(pady=5, padx=10, side="left")
 
-        save_button = ttk.Button(edit_right_col, text="Save", command=lambda: self.tabbed_interfaces[tab_name].save_file_edit())
+        save_button = tk.Button(edit_right_col, text="Save", command=lambda: self.tabbed_interfaces[tab_name].save_file_edit(), width=button_width)
         save_button.pack(pady=5, padx=10, side="left")
 
-        save_as_button = ttk.Button(edit_right_col, text="Save As", command=lambda: self.tabbed_interfaces[tab_name].save_as_file_edit())
+        save_as_button = tk.Button(edit_right_col, text="Save As", command=lambda: self.tabbed_interfaces[tab_name].save_as_file_edit(), width=button_width)
         save_as_button.pack(pady=5, padx=10, side="left")
 
-        discard_changes_button = ttk.Button(edit_right_col, text="Discard Changes", command=lambda: run_screen.tkraise())
+        discard_changes_button = tk.Button(edit_right_col, text="Discard Changes", command=lambda: run_screen.tkraise(), width=button_width)
         discard_changes_button.pack(pady=5, padx=10, side="left")
 
         # Resolve variables and save wigits into interface
@@ -539,77 +454,219 @@ class TabManager:
         self.tabbed_interfaces[tab_name].edit_textbox = edit_textbox
         self.tabbed_interfaces[tab_name].filepath_label = filepath_label
 
+        self.color_manager.primary_bg_wigits.append(edit_screen)
+        self.color_manager.primary_bg_wigits.append(edit_left_col)
+        self.color_manager.primary_bg_wigits.append(edit_tab_label)
+
+        self.color_manager.button_secondary_hover_wigits.append(open_edit_button)
+        self.color_manager.button_secondary_hover_wigits.append(save_button)
+        self.color_manager.button_secondary_hover_wigits.append(save_as_button)
+        self.color_manager.button_secondary_hover_wigits.append(discard_changes_button)
+        self.color_manager.button_secondary_hover_wigits.append(close_button)
+
+        self.color_manager.text_on_primary_wigits.append(edit_tab_label)
+
+
+
+        color_manager.update_colors()
+
         run_screen.tkraise()
         
     def close_tab(self, tab_frame):
         ''' Closes the tab containing the given tab_frame. '''
         self.notebook.forget(tab_frame)
 
-def load_color_scheme():
-    """Load saved color scheme or return defaults"""
-    try:
-        with open('.color_config.pkl', 'rb') as f:
-            colors = pickle.load(f)
-            return colors
-    except FileNotFoundError:
-        return {
-            'primary_color': "#4C721D",  # UVU Green
-            'secondary_color': "#FFFFFF",  # White
-            'text_color_on_primary': "#FFFFFF",
-            'text_color_on_secondary': "#4C721D",
-            'primary_button_hover_color': "#5d8b24",
-            'secondary_button_hover_color': "#F5F5F5"
+class ColorManager():
+    def __init__(self):
+        self.primary_bg_wigits = []
+        self.secondary_bg_wigits = []
+        self.text_on_primary_wigits = []
+        self.text_on_secondary_wigits = []
+        self.button_primary_hover_wigits = []
+        self.button_secondary_hover_wigits = []
+
+        self.colors = {
+            "primary_color": "#4C721D",
+            "secondary_color": "#FFFFFF",
+            "text_color_on_primary": "#FFFFFF",
+            "text_color_on_secondary": "#330000",
+            "primary_button_hover_color": "#5d8b24",
+            "secondary_button_hover_color": "#F0F0F0" 
         }
 
-def save_color_scheme(colors):
-    """Save color scheme to file"""
-    with open('.color_config.pkl', 'wb') as f:
-        pickle.dump(colors, f)
+        self.load_color_scheme()
 
-# Initial color scheme setup
-colors = load_color_scheme()
+    def update_colors(self):
+        ''' Update all widgets with set colors '''
+    
+        for wigit in self.primary_bg_wigits:
+            try:
+                wigit.config(bg=self.colors["primary_color"])
+            except Exception as e:
+                print("error changing bg color of wigit ", e)
+        
+        for wigit in self.secondary_bg_wigits:
+            try:
+                wigit.config(bg=self.colors["secondary_color"])
+            except Exception as e:
+                print("error changing bg color of wigit ", e)
+        
+        for wigit in self.text_on_primary_wigits:
+            try:
+                wigit.config(fg=self.colors["text_color_on_primary"])
+            except Exception as e:
+                print("error changing bg color of wigit ", e)
+        
+        for wigit in self.text_on_secondary_wigits:
+            try:
+                wigit.config(fg=self.colors["text_color_on_secondary"])
+            except Exception as e:
+                print("error changing bg color of wigit ", e)
 
-def on_button_hover(event):
-    print("temporary color bypass on_button_hover")
-    return
-    button = event.widget
-    current_bg = button.cget('bg')
-    if current_bg == interface.primary_color.get():
-        button.configure(bg=colors['primary_button_hover_color'])
-    else:
-        button.configure(bg=colors['secondary_button_hover_color'])
+        for wigit in self.button_primary_hover_wigits:
+            try:
+                wigit.config(bg=self.colors["primary_color"], fg=self.colors["text_color_on_primary"], activebackground=self.colors["primary_button_hover_color"], activeforeground=self.colors["text_color_on_secondary"])
+            except Exception as e:
+                print("error changing bg color of wigit ", e)
 
-def on_button_leave(event):
-    print("temporary color bypass on_button_leave")
-    return
-    button = event.widget
-    # Check if this is a primary or secondary button based on its foreground color
-    is_primary = button.cget('fg') == interface.text_color_on_primary.get()
-    button.configure(bg=interface.primary_color.get() if is_primary else interface.secondary_color.get())
+        for wigit in self.button_secondary_hover_wigits:
+            try:
+                wigit.config(bg=self.colors["secondary_color"], fg=self.colors["text_color_on_secondary"], activebackground=self.colors["secondary_button_hover_color"], activeforeground=self.colors["text_color_on_primary"])
+            except Exception as e:
+                print("error changing bg color of wigit ", e)
+            
+    def pick_primary_color(self):
+        """Open color picker for primary color"""
+        color = askcolor(color=self.colors["primary_color"], title="Choose Primary Color")
+        if color[1]:  # If a color was chosen (not cancelled)
+            #colors['primary_color'] = color[1]
+            self.colors["primary_color"] = color[1]
+            
+            # Calculate text colors based on brightness
+            rgb = tuple(int(color[1][i:i+2], 16) for i in (1, 3, 5))
+            brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
+            
+            # Set text colors
+            new_text_color = "#FFFFFF" if brightness < 128 else "#000000"
+            self.colors["text_color_on_primary"] = new_text_color
+            
+            # Text on secondary uses primary color
+            self.colors["text_color_on_secondary"] = color[1]
+            
+            # Calculate hover color - lighten the primary color
+            hover_rgb = tuple(min(255, int(c * 1.1)) for c in rgb)  # Lighten by 10%
+            self.colors["primary_button_hover_color"] = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
+            
+            self.save_color_scheme()
+            self.update_colors()
 
-def style_button(button, is_primary=True):
-    button.configure(
-        bg=colors['primary_color'] if is_primary else colors['secondary_color'],
-        fg=colors['text_color_on_primary'] if is_primary else colors['text_color_on_secondary'],
-        activebackground=colors['primary_button_hover_color'] if is_primary else colors['secondary_button_hover_color'],
-        activeforeground=colors['text_color_on_primary'] if is_primary else colors['text_color_on_secondary'],
-        bd=0,
-        relief="flat"
-    )
-    button.bind("<Enter>", on_button_hover)
-    button.bind("<Leave>", on_button_leave)
+    def pick_secondary_color(self):
+        """Open color picker for secondary color"""
+        color = askcolor(color=self.colors["secondary_color"], title="Choose Secondary Color")
+        if color[1]:  # If a color was chosen (not cancelled)
+            self.colors["secondary_color"] = color[1]
+            
+            # Calculate hover color - for white/light colors, slightly darken
+            rgb = tuple(int(color[1][i:i+2], 16) for i in (1, 3, 5))
+            hover_rgb = tuple(int(c * 0.9) for c in rgb)  # Darken by 10%
+            self.colors["secondary_button_hover_color"] = '#{:02x}{:02x}{:02x}'.format(*hover_rgb)
+            
+            self.save_color_scheme()
+            self.update_colors()
 
-def show_frame(frame):
-    ''' Raise the selected frame to switch screens '''
-    frame.tkraise()
+    def reset_colors(self):
+        """Reset colors to UVU default"""
+        self.colors = {
+            'primary_color': "#4C721D",
+            'secondary_color': "#FFFFFF",
+            'text_color_on_primary': "#FFFFFF",
+            'text_color_on_secondary': "#4C721D",
+            'primary_button_hover_color': "#5d8b24",  
+            'secondary_button_hover_color': "#F0F0F0" 
+        }
+                
+        self.save_color_scheme()
+        self.update_colors()
+
+    def load_color_scheme(self):
+        """Load saved color scheme or return defaults"""
+        try:
+            with open('.color_config.pkl', 'rb') as f:
+                self.colors = pickle.load(f)
+        except FileNotFoundError:
+            return {
+                'primary_color': "#4C721D",  # UVU Green
+                'secondary_color': "#FFFFFF",  # White
+                'text_color_on_primary': "#FFFFFF",
+                'text_color_on_secondary': "#4C721D",
+                'primary_button_hover_color': "#5d8b24",
+                'secondary_button_hover_color': "#F5F5F5"
+            }
+
+    def save_color_scheme(self):
+        """Save color scheme to file"""
+        with open('.color_config.pkl', 'wb') as f:
+            pickle.dump(self.colors, f)
+
+    def on_button_hover(self, event):
+        print("temporary color bypass on_button_hover")
+        return
+        button = event.widget
+        current_bg = button.cget('bg')
+        if current_bg == interface.primary_color.get():
+            button.configure(bg=colors['primary_button_hover_color'])
+        else:
+            button.configure(bg=colors['secondary_button_hover_color'])
+
+    def on_button_leave(self, event):
+        print("temporary color bypass on_button_leave")
+        return
+        button = event.widget
+        # Check if this is a primary or secondary button based on its foreground color
+        is_primary = button.cget('fg') == interface.text_color_on_primary.get()
+        button.configure(bg=interface.primary_color.get() if is_primary else interface.secondary_color.get())
+
+    def style_button(self, button, is_primary=True):
+        button.configure(
+            bg=colors['primary_color'] if is_primary else colors['secondary_color'],
+            fg=colors['text_color_on_primary'] if is_primary else colors['text_color_on_secondary'],
+            activebackground=colors['primary_button_hover_color'] if is_primary else colors['secondary_button_hover_color'],
+            activeforeground=colors['text_color_on_primary'] if is_primary else colors['text_color_on_secondary'],
+            bd=0,
+            relief="flat"
+        )
+        button.bind("<Enter>", on_button_hover)
+        button.bind("<Leave>", on_button_leave)
+
+    def open_color_selection_window(self):
+        """Open a new screen for color selection."""
+        color_window = tk.Toplevel()
+        color_window.title("Select Colors")
+
+        tk.Label(color_window, text="Select a color for Primary and Secondary:").pack(pady=10)
+
+        tk.Button(color_window, text="Choose Primary Color", command=self.pick_primary_color).pack(pady=5)
+
+        tk.Button(color_window, text="Choose Secondary Color", command=self.pick_secondary_color).pack(pady=5)
+
+        tk.Button(color_window, text="Reset to UVU Colors", command=self.reset_colors).pack(pady=5)
+
+        tk.Button(color_window, text="Close", command=color_window.destroy).pack(pady=10)
 
 # Create the main application window
 root = tk.Tk()
 root.title("UVSim GUI")
 root.geometry("1200x720")
 
-tab_manager = TabManager(root)
-tab_manager.add_tab()
+main_container = tk.Frame(root, highlightthickness=0, borderwidth=0)
+main_container.pack()
 
+color_manager = ColorManager()
+color_manager.primary_bg_wigits.append(root)
+color_manager.primary_bg_wigits.append(main_container)
+
+tab_manager = TabManager(main_container, color_manager)
+
+tab_manager.add_tab()
 
 root.mainloop()
