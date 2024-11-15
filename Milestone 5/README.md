@@ -6,13 +6,20 @@
 
 ### Features
 
-- **Memory Size**: 100-word memory.
+- **Memory Size**: 250-word memory.
 - **Accumulator**: Used for arithmetic and data manipulation.
 - **Operations**: Supports BasicML operations like reading, writing, loading, storing, arithmetic, and control operations.
-- **Instruction Set**: Each instruction is a signed four-digit decimal number.
+- **Instruction Set**: Each instruction is a signed four or six-digit decimal number.
 - **File Handling**: Supports loading and editing BasicML programs.
-- **User Interface**: A modern graphical interface with customizable colors and multiple screens.
-- **Color Customization**: Personalize the interface with custom primary and secondary colors.
+- **User Interface**:
+  - Mulit-tab interface supporting muliple program instances
+  - Modern graphical interface with customizable colors
+  - Tab-specific file editing and execution
+- **Color Customization**:
+  - Personalize primary and secondary colors
+  - Color settings persist between sessions
+  - Quick reset to default UVU colors
+  - Real-time color preview
 
 ## Getting Started
 
@@ -23,8 +30,9 @@
 
 ### Files
 
-- **UVSim_GUI.py**: The main program file containing the GUI implementation.
+- **TABS_UVSim.py** The main program file containing the GUI implementation and tab management.
 - **UVSim.py**: Contains the `LogicalOperator` class for executing BasicML instructions.
+- **UVSim_FileFormatConverter** contains the `FileFormatConverter` class for converting four-digit instructions into six-digit instructions.
 - **UVSim_FileHandler.py**: Handles file operations for loading BasicML programs.
 
 ### How to Run
@@ -34,7 +42,7 @@
 3. Run the program by executing the following command:
 
 ```bash
-python UVSim_GUI.py
+python TABS_UVSim.py
 ```
 
 4. The GUI window will open with the main screen interface.
@@ -56,6 +64,17 @@ python UVSim_GUI.py
 3. **Inputting Data**:
    - When the program requires input, the input field at the bottom will become active.
    - Type your response and press Enter or click "Submit" to provide input.
+
+### Creating Tabs
+
+1. **Creating Tabs**:
+
+   - Click "Add Tab" to open a new program instance.
+   - Each tab operates independently with its own memory and execution state.
+
+2. **Closing Tabs**:
+   - Use the "Close Tab" button within each tab.
+   - Unsaved changes will be lost on tab closure.
 
 ### File Editor
 
