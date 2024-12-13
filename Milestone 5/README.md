@@ -10,9 +10,9 @@
 - **Accumulator**: Used for arithmetic and data manipulation.
 - **Operations**: Supports BasicML operations like reading, writing, loading, storing, arithmetic, and control operations.
 - **Instruction Set**: Each instruction is a signed four or six-digit decimal number.
-- **File Handling**: Supports loading and editing BasicML programs.
+- **File Handling**: Supports loading and editing BasicML programs, including converting betwween 4-digit (legacy) and 6-digit formats.
 - **User Interface**:
-  - Mulit-tab interface supporting muliple program instances
+  - Multi-tab interface supporting muliple program instances
   - Modern graphical interface with customizable colors
   - Tab-specific file editing and execution
 - **Color Customization**:
@@ -32,7 +32,7 @@
 
 - **TABS_UVSim.py** The main program file containing the GUI implementation and tab management.
 - **UVSim.py**: Contains the `LogicalOperator` class for executing BasicML instructions.
-- **UVSim_FileFormatConverter** contains the `FileFormatConverter` class for converting four-digit instructions into six-digit instructions.
+- **UVSim_FileFormatConverter** contains the `FileFormatConverter` class for converting 4-digit instructions into 6-digit instructions.
 - **UVSim_FileHandler.py**: Handles file operations for loading BasicML programs.
 
 ### How to Run
@@ -54,6 +54,9 @@ python TABS_UVSim.py
 1. **Opening a File**:
 
    - Click the "Open File" button to browse and select a BasicML program file.
+   - The program supports both 4-digt (legacy) and 6-digit instruction formats. Legacy files are automatically
+     converted to 6-digit format during loading, ensuring compatibility. Detailed logs notify users about the
+     conversion process
    - The selected file path will be displayed, and the program will be loaded into memory.
 
 2. **Running the Program**:
@@ -62,6 +65,7 @@ python TABS_UVSim.py
    - The output will be displayed in the main window.
 
 3. **Inputting Data**:
+
    - When the program requires input, the input field at the bottom will become active.
    - Type your response and press Enter or click "Submit" to provide input.
 
@@ -70,9 +74,19 @@ python TABS_UVSim.py
 1. **Creating Tabs**:
 
    - Click "Add Tab" to open a new program instance.
-   - Each tab operates independently with its own memory and execution state.
+   - Each tab operates independently with its own memory and execution state. There is no fixed limit on the number of tabs,
+     but system resources may affect performance when managing a large number of instances.
 
-2. **Closing Tabs**:
+2. **Switching Tabs**:
+
+   - When a new tab is created, you will need to manually select it by clicking its label.
+
+3. **Exiting Exit Mode**:
+
+   - To leave the file editor for a tab, save your changes and manually return to the main view.
+
+4. **Closing Tabs**:
+
    - Use the "Close Tab" button within each tab.
    - Unsaved changes will be lost on tab closure.
 
@@ -83,11 +97,12 @@ python TABS_UVSim.py
    - Click the "Edit File" button on the main screen to open the editor interface.
 
 2. **Editor Features**:
+
    - Open existing files for editing
    - Edit BasicML instructions directly in the text area
    - Save changes to the current file or save as a new file
-   - Limited to 100 lines (memory size limit)
-   - Validates that each line contains a valid signed four-digit number
+   - Validate that each line contains a valid signed 4-digit or 6-digit number. Errors in validation
+     are displayed as pop-up messages, guiding users to correct their input.
 
 ### Color Customization
 
@@ -103,6 +118,7 @@ python TABS_UVSim.py
    - Reset to default UVU colors (green and white)
 
 3. **Color Persistence**:
+
    - Custom colors are saved and persist between sessions
 
 ## BasicML Instructions
@@ -139,18 +155,20 @@ If you encounter issues:
 1. **File Operations**:
 
    - Ensure all required files are in the same directory
-   - Check that BasicML files contain only valid signed four-digit numbers
+   - Check that BasicML files contain only valid signed 4-digit or 6-digit numbers
    - Verify file permissions allow reading and writing
 
 2. **GUI Issues**:
 
-   - If colors aren't saving, check write permissions in the application directory
+   - If colors aren't saving, check write permissions in the application directory. For example, on Windows, ensure
+     the application folder is not set to 'Read-Only' inits properties
    - If the interface becomes unresponsive, check the console for error messages
    - Restart the application if color settings become corrupted
+   - Clear any saved color configurations by deleting the `.color_config.pkl` file
 
 3. **Program Execution**:
    - Verify your BasicML program follows the correct format
-   - Check that all memory references are within the 100-word limit
+   - Check that all memory references are within the 250-word limit
    - Ensure all instructions use valid operation codes
 
 If problems persist:
@@ -158,4 +176,3 @@ If problems persist:
 - Verify your Python version (3.12 or higher required)
 - Check that Tkinter is properly installed
 - Try resetting to default colors
-- Clear any saved color configurations by deleting the `.color_config.pkl` file
