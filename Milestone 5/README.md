@@ -81,7 +81,7 @@ python TABS_UVSim.py
 
    - When a new tab is created, you will need to manually select it by clicking its label.
 
-3. **Exiting Exit Mode**:
+3. **Exiting Edit Mode**:
 
    - To leave the file editor for a tab, save your changes and manually return to the main view.
 
